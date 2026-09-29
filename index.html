@@ -126,6 +126,7 @@ body.browser .view,body.browser .tabbar{display:none!important}
 .summary b{color:var(--sky-deep);font-size:18px}
 .chips{display:flex;gap:10px;flex-wrap:nowrap}
 @media (max-width:359px){.chips{gap:6px}.summary .chip{padding:0 11px}}
+.sorttip{margin:-2px 2px 8px;font-size:15px;line-height:1.5;font-weight:700;color:var(--sky-deep)}
 .chip{
   min-height:44px;padding:0 16px;border-radius:999px;border:2px solid var(--sky-line);
   background:var(--paper);font-size:16px;font-weight:700;color:var(--muted);
@@ -361,6 +362,7 @@ body.bday .top .date b{color:var(--pink-text)}
         <button type="button" class="chip" data-filter="tomorrow" id="chipTomorrow">明日まで</button>
       </div>
     </div>
+    <div class="sorttip" id="sortTip" hidden>リストは長押しで並べ替えできる！</div>
     <div id="todoArea"></div>
     <div class="empty" id="todoEmpty" hidden>
       <img src="img/relax.png" alt="" width="170" height="170">
@@ -490,7 +492,7 @@ body.bday .top .date b{color:var(--pink-text)}
    ========================================================= */
 (function(){
 'use strict';
-const APP_VERSION='1.6.1';
+const APP_VERSION='1.6.2';
 const KEY='yarukoto.v1', BAK='yarukoto.v1.bak', DRAFT='yarukoto.v1.draft', BROKEN='yarukoto.v1.broken.', TIP_DRAG='yarukoto.v1.tipDrag';
 const DB_NAME='yarukoto', DB_STORE='snap', SNAP_KEEP=30, SNAP_MIN_GAP=60000, PROTECT_KEEP=10, TRASH_DAYS=90, GONE_MAX=5000, SEQ_MAX=9e15;
 const BACKUP_REMIND_DAYS=14;
@@ -982,6 +984,7 @@ function renderTodo(){
   }
   $('todoArea').innerHTML=html;
   $('todoEmpty').hidden=items.length>0;
+  $('sortTip').hidden=!items.length;
   $('todoEmptyText').innerHTML=(filter==='today'&&remain)?'今日までの やることは ないよ！':(filter==='tomorrow'&&remain)?'明日までの やることは ないよ！':'やることは なにもないよ〜<br>のんびりしよ！';
   $('firstHint').hidden=!(items.filter(i=>!i.done).length>=2&&!lsGet(TIP_DRAG));
   if(openPanel){ const ta=$('todoArea').querySelector('textarea[data-role=edit]'); if(ta) autoGrow(ta); updateMoveButtons(); }
