@@ -82,6 +82,20 @@ main{padding:0 16px}
 }
 .addbar button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--pink-deep)}
 .addbar button[disabled]{opacity:.5}
+/* ついか → いつまでに やる？（キーボードの 有無に かかわらず 見える 上寄り） */
+.dsheet{position:fixed;inset:0;z-index:100;background:rgba(20,45,65,.38);display:flex;justify-content:center;align-items:flex-start;padding:calc(env(safe-area-inset-top,0px) + 76px) 16px 16px}
+.dsheet[hidden]{display:none}
+.dsbox{word-break:keep-all;overflow-wrap:anywhere;width:100%;max-width:440px;background:var(--paper);border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.22);padding:18px 16px 14px}
+.dsbox h3{font-size:22px;line-height:1.4;text-align:center;margin:0 0 6px}
+.dsbox .what{font-size:16px;line-height:1.5;font-weight:700;color:var(--muted);text-align:center;margin:0 4px 14px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.dsgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dsbtn{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:72px;padding:6px 8px;border-radius:16px;border:2px solid var(--sky-line);background:var(--paper);font-size:21px;font-weight:700;color:var(--ink);line-height:1.25;overflow:hidden}
+.dsbtn small{font-size:14px;font-weight:700;color:var(--muted);margin-top:2px}
+.dsbtn.today{background:var(--pink);border-color:var(--pink-deep);box-shadow:0 3px 0 var(--pink-deep)}
+.dsbtn.today small{color:var(--ink)}
+.dsbtn:active{transform:translateY(2px)}
+.dsbtn input{position:absolute;inset:-2px;width:auto;height:auto;opacity:.01;font-size:16px}
+.dsbox .cancel{display:block;width:100%;min-height:52px;margin-top:10px;border-radius:14px;font-size:17px;font-weight:700;color:var(--muted)}
 
 .banner{background:var(--pink-pale);border:2px solid var(--pink);border-radius:16px;padding:12px 14px;margin:6px 0 10px;font-size:16px;line-height:1.55;font-weight:700;color:var(--pink-text)}
 .banner .steps{margin-top:8px;font-weight:500;color:var(--ink);font-size:16px;line-height:1.6}
@@ -303,6 +317,19 @@ details[open] summary::before{content:"▼"}
       <input type="text" id="newText" placeholder="（例）デコチェキ、洗濯" maxlength="200" enterkeyhint="done" aria-label="やることを入力" disabled>
       <button type="submit" id="addBtn" disabled>ついか</button>
     </form>
+    <div class="dsheet" id="dueSheet" hidden role="dialog" aria-modal="true" aria-labelledby="dueSheetTitle">
+      <div class="dsbox">
+        <h3 id="dueSheetTitle">いつまでに やる？</h3>
+        <div class="what" id="dueSheetText"></div>
+        <div class="dsgrid">
+          <button type="button" class="dsbtn today" data-due="today">きょう<small id="dsToday"></small></button>
+          <button type="button" class="dsbtn" data-due="tomorrow">あした<small id="dsTomorrow"></small></button>
+          <label class="dsbtn">ほかの日<small>カレンダー</small><input type="date" id="dueSheetDate" aria-label="日にちを えらぶ"></label>
+          <button type="button" class="dsbtn" data-due="none">いつでも<small>きめない</small></button>
+        </div>
+        <button type="button" class="cancel" id="dueSheetCancel">やめる</button>
+      </div>
+    </div>
     <div class="hint" id="firstHint" hidden>ながおし して うごかすと、ならびかえ できるよ</div>
     <div class="summary">
       <div id="todoSummary"></div>
@@ -441,7 +468,7 @@ details[open] summary::before{content:"▼"}
    ========================================================= */
 (function(){
 'use strict';
-const APP_VERSION='1.3.2';
+const APP_VERSION='1.4.0';
 const KEY='yarukoto.v1', BAK='yarukoto.v1.bak', DRAFT='yarukoto.v1.draft', BROKEN='yarukoto.v1.broken.', TIP_DRAG='yarukoto.v1.tipDrag';
 const DB_NAME='yarukoto', DB_STORE='snap', SNAP_KEEP=30, SNAP_MIN_GAP=60000, PROTECT_KEEP=10, TRASH_DAYS=90, GONE_MAX=5000, SEQ_MAX=9e15;
 const BACKUP_REMIND_DAYS=14;
@@ -1039,16 +1066,44 @@ function updateMetaInPlace(li,id){
 }
 
 /* ---------- events ---------- */
+/* ついか → 「いつまでに やる？」を えらんでから 足す（えらぶまで 入力欄の 文字は そのまま） */
+let pendingAdd=null;
+function mdw(s){ const d=parseYmd(s); return d?(d.getMonth()+1)+'/'+d.getDate()+'（'+WD[d.getDay()]+'）':''; }
+function openDueSheet(text){
+  pendingAdd=text;
+  const t=ymd();
+  $('dueSheetText').textContent='「'+text+'」';
+  $('dsToday').textContent=mdw(t); $('dsTomorrow').textContent=mdw(addDays(t,1));
+  const di=$('dueSheetDate'); di.value=''; di.min=t;
+  $('dueSheet').hidden=false;
+  try{ $('newText').blur(); }catch(x){}
+}
+function closeDueSheet(refocus){
+  $('dueSheet').hidden=true; pendingAdd=null;
+  if(refocus){ try{ $('newText').focus({preventScroll:true}); }catch(x){} }
+}
+function commitAdd(due){
+  if(pendingAdd===null) return;
+  const text=pendingAdd; closeDueSheet(false);
+  const it=addItem(text,due||null);
+  const inp=$('newText'); if(inp.value.trim()===text) inp.value='';
+  openPanel=null; if(filter!=='all'){ filter='all'; } renderTodo(); renderStatus();
+  if(!it) showToast('ついかできなかった。もういちど ためしてね',{ms:3000});
+  try{ inp.focus({preventScroll:true}); }catch(x){}
+}
 $('addForm').addEventListener('submit',(e)=>{
   e.preventDefault();
   const inp=$('newText'); const text=inp.value.trim(); if(!text) return;
   if(!loaded){ showToast('じゅんびちゅう… もういちど おしてね',{ms:2000}); return; }
-  const it=addItem(text,null);
-  inp.value='';
-  openPanel=null; if(filter!=='all'){ filter='all'; } renderTodo(); renderStatus();
-  if(!it) showToast('ついかできなかった。もういちど ためしてね',{ms:3000});
-  try{ inp.focus({preventScroll:true}); }catch(x){}
+  openDueSheet(text);
 });
+$('dueSheet').addEventListener('click',(e)=>{
+  const b=e.target.closest('button[data-due]');
+  if(b){ const k=b.dataset.due, t=ymd(); commitAdd(k==='today'?t:k==='tomorrow'?addDays(t,1):null); return; }
+  if(e.target.id==='dueSheetCancel'||e.target===$('dueSheet')) closeDueSheet(true);
+});
+$('dueSheetDate').addEventListener('change',(e)=>{ const v=e.target.value; if(v&&parseYmd(v)) commitAdd(v); });
+document.addEventListener('keydown',(e)=>{ if(e.key==='Escape'&&!$('dueSheet').hidden) closeDueSheet(true); });
 document.querySelectorAll('.chip[data-filter]').forEach(b=>b.addEventListener('click',()=>{ filter=b.dataset.filter; renderTodo(); }));
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
 
@@ -1316,7 +1371,7 @@ enqueue(loadIdb); // 保存より先に 控えを 読む
 // テスト・診断用の入口（画面からは見えない）
 window.__yarukoto={
   get state(){ return state; }, get loaded(){ return loaded; }, get loadedFrom(){ return loadedFrom; }, get lastSave(){ return lastSave; }, get recovered(){ return recovered; },
-  KEY,BAK,DRAFT,TIP_DRAG,addItem,updateItem,moveItem,sortKey,setDone,deleteItem,restoreTrash,emptyTrash,moveDoneToTrash,backupText,parseBackup,importState,renderAll,save,flushDraft,mergeStates,
+  KEY,BAK,DRAFT,TIP_DRAG,openDueSheet,commitAdd,addItem,updateItem,moveItem,sortKey,setDone,deleteItem,restoreTrash,emptyTrash,moveDoneToTrash,backupText,parseBackup,importState,renderAll,save,flushDraft,mergeStates,
   idbLatest:()=>idb.get('latest'), idbKeys:()=>idb.keys(), idbGet:(k)=>idb.get(k), get idbWriteOk(){ return idbWriteOk; }, idbFlush:()=>idbQueue, get isStandalone(){ return isStandalone; },
 };
 })();
