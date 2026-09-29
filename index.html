@@ -94,7 +94,7 @@ main{padding:0 16px}
 .dsbtn.today{background:var(--pink);border-color:var(--pink-deep);box-shadow:0 3px 0 var(--pink-deep)}
 .dsbtn.today small{color:var(--ink)}
 .dsbtn:active{transform:translateY(2px)}
-.dsbtn input{position:absolute;inset:-2px;width:auto;height:auto;opacity:.01;font-size:16px}
+.dsbtn input{position:absolute;inset:-2px;width:auto;height:auto;opacity:.01;font-size:16px;color:transparent;background:transparent;border:0}
 .dsbox .cancel{display:block;width:100%;min-height:52px;margin-top:10px;border-radius:14px;font-size:17px;font-weight:700;color:var(--muted)}
 
 .banner{background:var(--pink-pale);border:2px solid var(--pink);border-radius:16px;padding:12px 14px;margin:6px 0 10px;font-size:16px;line-height:1.55;font-weight:700;color:var(--pink-text)}
@@ -187,7 +187,8 @@ body.drag-on{-webkit-user-select:none;user-select:none}
 .duerow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .datechip{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:2px solid var(--sky-line);background:var(--paper);font-size:16px;font-weight:700;color:var(--muted);overflow:hidden}
 .datechip.on{background:var(--sky-deep);border-color:var(--sky-deep);color:#fff}
-.datechip input{position:absolute;inset:-2px;width:auto;height:auto;opacity:.01;font-size:16px}
+.datechip input{position:absolute;inset:-2px;width:auto;height:auto;opacity:.01;font-size:16px;color:transparent;background:transparent;border:0}
+.datechip input::-webkit-datetime-edit,.dsbtn input::-webkit-datetime-edit,.datechip input::-webkit-calendar-picker-indicator,.dsbtn input::-webkit-calendar-picker-indicator{opacity:0}
 .btns{display:flex;gap:12px;margin-top:2px;flex-wrap:wrap}
 .btn{
   min-height:48px;padding:0 16px;border-radius:14px;font-size:16px;font-weight:700;
@@ -468,7 +469,7 @@ details[open] summary::before{content:"▼"}
    ========================================================= */
 (function(){
 'use strict';
-const APP_VERSION='1.4.0';
+const APP_VERSION='1.4.1';
 const KEY='yarukoto.v1', BAK='yarukoto.v1.bak', DRAFT='yarukoto.v1.draft', BROKEN='yarukoto.v1.broken.', TIP_DRAG='yarukoto.v1.tipDrag';
 const DB_NAME='yarukoto', DB_STORE='snap', SNAP_KEEP=30, SNAP_MIN_GAP=60000, PROTECT_KEEP=10, TRASH_DAYS=90, GONE_MAX=5000, SEQ_MAX=9e15;
 const BACKUP_REMIND_DAYS=14;
