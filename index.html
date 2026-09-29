@@ -86,6 +86,22 @@ main{padding:0 16px}
 .banner{background:var(--pink-pale);border:2px solid var(--pink);border-radius:16px;padding:12px 14px;margin:6px 0 10px;font-size:16px;line-height:1.55;font-weight:700;color:var(--pink-text)}
 .banner .steps{margin-top:8px;font-weight:500;color:var(--ink);font-size:16px;line-height:1.6}
 .banner button{min-height:44px;padding:0 12px;color:var(--sky-deep);font-weight:700;text-decoration:underline}
+/* ホーム画面に ついかする あんない（Safariなどで ひらいたとき。アプリにしてから つかう） */
+body.browser .view,body.browser .tabbar{display:none!important}
+.guide{padding:6px 0 20px}
+.guide h2{font-size:clamp(20px,6.2vw,24px);line-height:1.45;margin:4px 0 6px}
+.guide h2 .nw{white-space:nowrap}
+.guide h2 b{color:var(--pink-text)}
+.guide .lead{font-size:16px;line-height:1.7;color:var(--muted);font-weight:700;margin-bottom:14px}
+.gsteps{list-style:none;display:flex;flex-direction:column;gap:12px;counter-reset:g}
+.gsteps li{position:relative;background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 14px 14px 58px;font-size:18px;line-height:1.75;counter-increment:g;overflow-wrap:anywhere}
+.gsteps li::before{content:counter(g);position:absolute;left:14px;top:15px;width:32px;height:32px;border-radius:50%;background:var(--pink-deep);color:#fff;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center}
+.gsteps b{color:var(--sky-deep)}
+.gsteps img.ic{display:inline-block;height:30px;width:auto;vertical-align:middle;margin:-4px 3px 0}
+.gsteps img.app{height:38px;border-radius:9px;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.gsteps .sub{display:block;font-size:15px;line-height:1.7;color:var(--muted);margin-top:4px}
+.guide .note{margin-top:14px;font-size:15px;line-height:1.7;color:var(--muted)}
+.guide .qr{display:block;width:220px;height:220px;margin:6px auto 0;image-rendering:pixelated}
 .hint{background:var(--sky-pale);border-radius:16px;padding:12px 14px;margin:6px 0 10px;font-size:16px;line-height:1.55;color:var(--sky-deep);font-weight:700}
 
 .summary{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 2px 8px;font-size:16px;color:var(--muted);flex-wrap:wrap;font-weight:700}
@@ -111,7 +127,7 @@ main{padding:0 16px}
 .item.leaving .text{text-decoration:line-through;color:var(--muted)}
 .row{display:flex;align-items:center;min-height:64px}
 .check{
-  flex:none;width:60px;min-height:64px;display:flex;align-items:center;justify-content:center;
+  flex:none;width:56px;min-height:64px;display:flex;align-items:center;justify-content:center;
 }
 .check i{
   width:34px;height:34px;border-radius:50%;border:3px solid var(--sky-mid);background:#fff;
@@ -131,11 +147,18 @@ main{padding:0 16px}
 .due.today{background:var(--pink-pale);color:var(--pink-text)}
 .due.over{background:var(--warn-pale);color:var(--warn)}
 .more{
-  flex:none;width:56px;min-height:64px;color:var(--sky-deep);
-  display:flex;align-items:center;justify-content:center;
+  flex:none;align-self:center;min-height:44px;margin:0 10px 0 4px;padding:0 12px;border-radius:999px;
+  background:var(--sky-pale);color:var(--sky-deep);font-size:14px;font-weight:700;white-space:nowrap;
 }
-.more svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .more:active{opacity:.6}
+/* ながおしで ならびかえ */
+.row{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.list .item{transition:transform .18s ease}
+.list .item.dragging{transition:none;position:relative;z-index:5;border-color:var(--sky-mid);box-shadow:0 14px 30px rgba(20,111,143,.30)}
+body.drag-on{-webkit-user-select:none;user-select:none}
+.moverow{display:flex;gap:10px}
+.moverow .btn{flex:1}
+.moverow .btn:disabled{opacity:.35}
 
 /* inline edit panel */
 .panel{border-top:2px dashed var(--line);padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px}
@@ -265,22 +288,20 @@ details[open] summary::before{content:"▼"}
 </header>
 
 <main>
+  <!-- ===== ホーム画面に ついかする あんない（アプリとして ひらいていない ときだけ） ===== -->
+  <section class="guide" id="installGuide" hidden>
+    <h2>まずは <b>ホーム画面に ついか</b> <span class="nw">してね</span></h2>
+    <div class="lead" id="guideLead">やることリスト！は アプリにして つかうよ。<br>この 画面では つかえないの。</div>
+    <ol class="gsteps" id="guideSteps"></ol>
+    <div class="note" id="guideNote" hidden></div>
+  </section>
   <!-- ===== やること ===== -->
   <section class="view" id="view-todo">
     <form class="addbar" id="addForm" autocomplete="off">
-      <input type="text" id="newText" placeholder="なにをする？" maxlength="200" enterkeyhint="done" aria-label="やることを入力" disabled>
+      <input type="text" id="newText" placeholder="（例）デコチェキ、洗濯" maxlength="200" enterkeyhint="done" aria-label="やることを入力" disabled>
       <button type="submit" id="addBtn" disabled>ついか</button>
     </form>
-    <div class="banner" id="inAppBanner" hidden>
-      いまは LINEなどの アプリの中で ひらいているよ。このままだと ホーム画面に ついかできないの。<br>
-      画面の メニュー（「…」や 共有マーク）から「Safariで開く」を えらんでね。
-    </div>
-    <div class="banner" id="safariBanner" hidden>
-      ホーム画面に ついかしてから つかってね！<br>ここ（Safari）で 入れたものは、ついか後の アプリには うつらないよ。
-      <button type="button" id="safariHow">やりかたを 見る</button>
-      <div class="steps" id="safariSteps" hidden>① 画面の下の「共有」ボタン（四角から 矢印）を タップ<br>② 「ホーム画面に追加」を タップ<br>③ 右上の「追加」を タップ<br>④ ホーム画面の アイコンから ひらく</div>
-    </div>
-    <div class="hint" id="firstHint" hidden>まえに Safariで つかっていたら、せっていの「バックアップから もどす」で うつせるよ。</div>
+    <div class="hint" id="firstHint" hidden>ながおし して うごかすと、ならびかえ できるよ</div>
     <div class="summary">
       <div id="todoSummary"></div>
       <div class="chips">
@@ -418,8 +439,8 @@ details[open] summary::before{content:"▼"}
    ========================================================= */
 (function(){
 'use strict';
-const APP_VERSION='1.2.1';
-const KEY='yarukoto.v1', BAK='yarukoto.v1.bak', DRAFT='yarukoto.v1.draft', BROKEN='yarukoto.v1.broken.';
+const APP_VERSION='1.3.0';
+const KEY='yarukoto.v1', BAK='yarukoto.v1.bak', DRAFT='yarukoto.v1.draft', BROKEN='yarukoto.v1.broken.', TIP_DRAG='yarukoto.v1.tipDrag';
 const DB_NAME='yarukoto', DB_STORE='snap', SNAP_KEEP=30, SNAP_MIN_GAP=60000, PROTECT_KEEP=10, TRASH_DAYS=90, GONE_MAX=5000, SEQ_MAX=9e15;
 const BACKUP_REMIND_DAYS=14;
 
@@ -451,7 +472,7 @@ function dueLabel(due){
 }
 const isStandalone=(()=>{ try{ return navigator.standalone===true||matchMedia('(display-mode: standalone)').matches; }catch(e){ return false; } })();
 const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-const isInApp=/Line\/|FBAN|FBAV|Instagram|Twitter|TikTok|MicroMessenger|KAKAOTALK|YJApp/i.test(navigator.userAgent);
+const isInApp=/\bLine\/|FBAN|FBAV|Instagram|Twitter|TikTok|MicroMessenger|KAKAOTALK|YJApp/i.test(navigator.userAgent);
 
 /* ---------- state schema ---------- */
 function freshState(){ const now=Date.now(); return {v:1,born:now,seq:now,updatedAt:0,name:'あいか',items:[],trash:[],gone:[],lastBackupAt:0}; }
@@ -467,6 +488,7 @@ function normItem(it){
     createdAt:num(it.createdAt,0),
     updatedAt:num(it.updatedAt,0),
   };
+  o.pos=Math.min(Math.max(num(it.pos,-o.createdAt),-SEQ_MAX),SEQ_MAX); // ならび順（小さいほど 上）
   if(o.done&&o.doneAt===null) o.doneAt=o.updatedAt||o.createdAt||Date.now();
   if(!o.done) o.doneAt=null;
   if(num(it.deletedAt,null)!==null) o.deletedAt=it.deletedAt;
@@ -770,28 +792,53 @@ document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==
 window.addEventListener('pageshow',()=>{ if(loaded){ if(adoptNewer()) renderAll(); healPrimary(); renderToday(); } });
 window.addEventListener('pagehide',()=>{ flushDraft(); });
 
+/* ---------- ならび順 ---------- */
+// pos が 小さいほど 上。同じなら あたらしい方が 上
+function sortKey(a,b){ return (a.pos-b.pos)||((b.createdAt||0)-(a.createdAt||0))||(a.id<b.id?-1:a.id>b.id?1:0); }
+function topPos(s){ let m=Infinity; for(const i of s.items) if(i.pos<m) m=i.pos; return Math.min(-Date.now(),(m===Infinity?0:m)-1000); }
+// すきまが なくなったら 番号を ふりなおす（ならびは そのまま）
+function renumber(s){ const now=Date.now(); s.items.slice().sort(sortKey).forEach((it,i)=>{ const p=(i+1)*1000; if(it.pos!==p){ it.pos=p; it.updatedAt=Math.max(now,it.updatedAt||0); } }); }
+// id を aboveId の すぐ下・belowId の すぐ上に うごかす（うごかした 1こだけ 書きかえる）
+function moveItem(id,aboveId,belowId){
+  let moved=false;
+  commit(s=>{
+    const it=s.items.find(i=>i.id===id); if(!it) return;
+    const calc=()=>{
+      const a=aboveId?s.items.find(i=>i.id===aboveId):null, b=belowId?s.items.find(i=>i.id===belowId):null;
+      if(!a&&!b) return null;
+      if(!a) return b.pos-1000;
+      if(!b) return a.pos+1000;
+      const m=(a.pos+b.pos)/2; return (a.pos<m&&m<b.pos)?m:NaN;
+    };
+    let p=calc(); if(p===null) return;
+    if(!isFinite(p)){ renumber(s); p=calc(); if(p===null||!isFinite(p)) return; }
+    it.pos=p; it.updatedAt=Date.now(); moved=true;
+  });
+  return moved;
+}
+
 /* ---------- operations ---------- */
 function addItem(text,due){
   text=String(text||'').trim(); if(!text) return null;
-  const it={id:uid(),text:cut(text,500),done:false,doneAt:null,due:due||null,createdAt:Date.now(),updatedAt:Date.now()};
-  const ok=commit(s=>{ s.items.unshift(it); });
+  const it={id:uid(),text:cut(text,500),done:false,doneAt:null,due:due||null,createdAt:Date.now(),updatedAt:Date.now(),pos:0};
+  const ok=commit(s=>{ it.pos=topPos(s); s.items.unshift(it); });
   return ok===false&&!loaded?null:it;
 }
 function findItem(id){ return state.items.find(i=>i.id===id); }
 function updateItem(id,patch){ return commit(s=>{ const it=s.items.find(i=>i.id===id); if(!it) return; Object.assign(it,patch); it.updatedAt=Date.now(); }); }
 function setDone(id,done){ return commit(s=>{ const it=s.items.find(i=>i.id===id); if(!it) return; it.done=!!done; it.doneAt=done?Date.now():null; it.updatedAt=Date.now(); }); }
 function deleteItem(id){ let removed=null; commit(s=>{ const i=s.items.findIndex(x=>x.id===id); if(i<0) return; removed=s.items.splice(i,1)[0]; removed.deletedAt=Date.now(); s.trash.unshift(removed); },true); return removed; }
-function restoreTrash(id){ return commit(s=>{ const i=s.trash.findIndex(x=>x.id===id); if(!(i>=0)) return; const it=s.trash.splice(i,1)[0]; delete it.deletedAt; it.updatedAt=Date.now(); s.items.unshift(it); },true); }
+function restoreTrash(id){ return commit(s=>{ const i=s.trash.findIndex(x=>x.id===id); if(!(i>=0)) return; const it=s.trash.splice(i,1)[0]; delete it.deletedAt; it.updatedAt=Date.now(); it.pos=topPos(s); s.items.unshift(it); },true); }
 function emptyTrash(){ idbProtect('clear',JSON.stringify(state)); return commit(s=>{ addGone(s,s.trash); s.trash=[]; },true); }
 function moveDoneToTrash(){ return commit(s=>{ const now=Date.now(); const keep=[]; for(const it of s.items){ if(it.done){ it.deletedAt=now; it.updatedAt=now; s.trash.unshift(it); } else keep.push(it); } s.items=keep; },true); }
 function markBackup(){ commit(s=>{ s.lastBackupAt=Date.now(); }); }
 
 /* ---------- backup / import（ファイルは使わない。もじを「メモ」アプリに おくって、はりつけて もどす） ---------- */
-// 形: 1行目 見出し ／ 2行目 {"app":"yarukoto","v":2,"items":[[id,text,doneAt|0,due|"",createdAt,updatedAt],…]}
+// 形: 1行目 見出し ／ 2行目 {"app":"yarukoto","v":2,"items":[[id,text,doneAt|0,due|"",createdAt,updatedAt,pos],…]}
 // ごみばこは入れない（もじを短くするため）。
 function backupText(){
   const d=new Date();
-  const items=state.items.map(i=>[i.id,i.text,i.done?(i.doneAt||i.updatedAt||1):0,i.due||'',i.createdAt||0,i.updatedAt||0]);
+  const items=state.items.map(i=>[i.id,i.text,i.done?(i.doneAt||i.updatedAt||1):0,i.due||'',i.createdAt||0,i.updatedAt||0,i.pos]);
   return 'あいかの やることリスト バックアップ（'+(d.getMonth()+1)+'/'+d.getDate()+'）\n'+JSON.stringify({app:'yarukoto',v:2,at:Date.now(),items});
 }
 function parseBackup(text){
@@ -803,7 +850,7 @@ function parseBackup(text){
   try{ o=JSON.parse(s); }catch(e){ try{ o=JSON.parse(s.replace(/[“”]/g,'"')); }catch(e2){ o=null; } }
   if(!o) return {error:'よめなかったよ。もじが とちゅうで きれているかも。ぜんぶ コピーして はりつけてね。'};
   if(o.app==='yarukoto'&&o.v===2&&Array.isArray(o.items)){
-    const items=o.items.map(r=>Array.isArray(r)?{id:r[0],text:r[1],done:!!r[2],doneAt:r[2]||null,due:r[3]||null,createdAt:r[4],updatedAt:r[5]}:null);
+    const items=o.items.map(r=>Array.isArray(r)?{id:r[0],text:r[1],done:!!r[2],doneAt:r[2]||null,due:r[3]||null,createdAt:r[4],updatedAt:r[5],pos:r[6]}:null);
     return {state:normalize({v:1,seq:0,born:0,items,trash:[]})};
   }
   const d=(o.app==='yarukoto'&&o.data)?o.data:o;
@@ -836,7 +883,6 @@ function switchView(v){
   window.scrollTo(0,0);
   if(v==='done') renderDone(); if(v==='settings') renderSettings();
 }
-const pencil='<svg viewBox="0 0 24 24"><path d="M4 20l4.5-1L19 8.5a2.1 2.1 0 0 0-3-3L5.5 16z"/><path d="M14 7l3 3"/></svg>';
 function itemHtml(it){
   const dl=it.due?dueLabel(it.due):null;
   const over=dl&&dl.c==='over';
@@ -845,7 +891,7 @@ function itemHtml(it){
     '<div class="row">'+
       '<button type="button" class="check'+(isLeaving?' on':'')+'" data-act="check" aria-label="できた"><i></i></button>'+
       '<div class="body" data-act="open"><div class="text">'+esc(it.text)+'</div>'+(dl?'<div class="meta"><span class="due '+dl.c+'">'+esc(dl.t)+'</span></div>':'')+'</div>'+
-      '<button type="button" class="more" data-act="open" aria-label="へんしゅう">'+pencil+'</button>'+
+      '<button type="button" class="more" data-act="when">いつまで？</button>'+
     '</div>'+
     (openPanel===it.id?panelHtml(it):'')+
   '</li>';
@@ -859,6 +905,8 @@ function panelHtml(it){
     '<div class="label">いつまで？</div>'+
     '<div class="duerow">'+chip('','なし')+chip(t,'きょう')+chip(tm,'あした')+
       '<label class="datechip'+(other?' on':'')+'"><span data-role="datelabel">'+(other&&dl?esc(dl.t):'ほかの日')+'</span><input type="date" data-role="date" value="'+esc(due)+'" aria-label="日にちを えらぶ"></label></div>'+
+    '<div class="label">じゅんばん</div>'+
+    '<div class="moverow"><button type="button" class="btn ghost" data-act="up">▲ うえへ</button><button type="button" class="btn ghost" data-act="down">▼ したへ</button></div>'+
     '<div class="btns"><button type="button" class="btn danger" data-act="delete">けす</button><span class="sp"></span><button type="button" class="btn ghost" data-act="close">とじる</button><button type="button" class="btn primary" data-act="save" style="min-width:120px">ほぞん</button></div>'+
   '</div>';
 }
@@ -878,15 +926,14 @@ function renderTodo(){
   ];
   let html='';
   for(const g of groups){
-    const list=items.filter(g.f); if(!list.length) continue;
-    if(g.k==='later') list.sort((a,b)=>a.due<b.due?-1:a.due>b.due?1:0);
+    const list=items.filter(g.f).sort(sortKey); if(!list.length) continue;
     html+='<div class="group'+(g.k==='now'?' now':'')+'">'+g.t+'<span>（'+list.length+'）</span></div><ul class="list">'+list.map(itemHtml).join('')+'</ul>';
   }
   $('todoArea').innerHTML=html;
   $('todoEmpty').hidden=items.length>0;
   $('todoEmptyText').innerHTML=(filter==='today'&&remain)?'きょうまでの やることは ないよ！':'やることは なにもないよ〜<br>のんびりしよ！';
-  $('firstHint').hidden=!(isStandalone&&freshBoot&&state.items.length===0&&state.trash.length===0);
-  if(openPanel){ const ta=$('todoArea').querySelector('textarea[data-role=edit]'); if(ta) autoGrow(ta); }
+  $('firstHint').hidden=!(items.filter(i=>!i.done).length>=2&&!lsGet(TIP_DRAG));
+  if(openPanel){ const ta=$('todoArea').querySelector('textarea[data-role=edit]'); if(ta) autoGrow(ta); updateMoveButtons(); }
 }
 function renderDone(){
   const done=state.items.filter(i=>i.done&&!leaving.has(i.id)).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
@@ -951,7 +998,7 @@ function showToast(msg,opt){
 function hideToast(){ clearTimeout(toastTimer); $('toast').classList.add('hide'); }
 // キーボードが出ている間はトーストを持ち上げる
 if(window.visualViewport){ const vv=window.visualViewport; const adj=()=>{ const kb=Math.max(0,window.innerHeight-vv.height-vv.offsetTop); $('toast').style.transform=kb>80?('translateY(-'+kb+'px)'):''; }; vv.addEventListener('resize',adj); vv.addEventListener('scroll',adj); }
-const PRAISE=['やったね！','えらい！','すごい！','その ちょうし！','ナイス！','がんばった！','さすが！'];
+const PRAISE=['あいかちゃん えらい！','あいかちゃん すごい！','あいかちゃん やったね！','さすが あいかちゃん！','あいかちゃん がんばった！','あいかちゃん ナイス！','その ちょうし、あいかちゃん！'];
 function confetti(x,y){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const c=$('confetti'); const ctx=c.getContext('2d'); if(!ctx) return;
@@ -1002,7 +1049,6 @@ $('addForm').addEventListener('submit',(e)=>{
 });
 document.querySelectorAll('.chip[data-filter]').forEach(b=>b.addEventListener('click',()=>{ filter=b.dataset.filter; renderTodo(); }));
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
-$('safariHow').addEventListener('click',()=>{ $('safariSteps').hidden=!$('safariSteps').hidden; });
 
 function settleLeaving(){
   clearTimeout(settleTimer);
@@ -1025,7 +1071,9 @@ $('todoArea').addEventListener('click',(e)=>{
     showToast(PRAISE[Math.random()*PRAISE.length|0],{praise:true,img:'img/yay.png',ms:1800});
     return;
   }
-  if(act==='open'){ if(leaving.has(id)) return; flushDraft(); openPanel=(openPanel===id)?null:id; renderTodo(); if(openPanel){ const ta=$('todoArea').querySelector('li[data-id="'+CSS.escape(id)+'"] textarea'); if(ta){ autoGrow(ta); try{ ta.focus({preventScroll:false}); ta.setSelectionRange(ta.value.length,ta.value.length); }catch(x){} } } return; }
+  if(act==='when'){ if(leaving.has(id)) return; flushDraft(); openPanel=(openPanel===id)?null:id; renderTodo(); if(openPanel) updateMoveButtons(); return; }
+  if(act==='up'||act==='down'){ flushDraft(); moveBy(id,act==='up'?-1:1); return; }
+  if(act==='open'){ if(leaving.has(id)) return; flushDraft(); openPanel=(openPanel===id)?null:id; renderTodo(); if(openPanel){ updateMoveButtons(); const ta=$('todoArea').querySelector('li[data-id="'+CSS.escape(id)+'"] textarea'); if(ta){ autoGrow(ta); try{ ta.focus({preventScroll:false}); ta.setSelectionRange(ta.value.length,ta.value.length); }catch(x){} } } return; }
   if(act==='due'){ const v=btn.dataset.due||null; updateItem(id,{due:v}); updateMetaInPlace(li,id); return; }
   if(act==='save'){ const ta=li.querySelector('textarea[data-role=edit]'); const text=(ta?ta.value:'').trim(); if(!text){ showToast('なにか 書いてね',{ms:1500}); return; } draftId=null; draftText=null; lsDel(DRAFT); clearTimeout(draftTimer); updateItem(id,{text:cut(text,500)}); openPanel=null; renderTodo(); showToast('ほぞん したよ',{ms:1200}); return; }
   if(act==='close'){ flushDraft(); openPanel=null; renderTodo(); return; }
@@ -1036,6 +1084,103 @@ $('todoArea').addEventListener('click',(e)=>{
     return;
   }
 });
+/* ---------- ならびかえ: ボタン（おなじ まとまりの 中で 1つずつ） ---------- */
+function liOf(id){ return $('todoArea').querySelector('li.item[data-id="'+CSS.escape(id)+'"]'); }
+function sectionIds(id){ const li=liOf(id); return li?[...li.parentElement.children].map(el=>el.dataset.id):null; }
+function updateMoveButtons(){
+  if(!openPanel) return; const li=liOf(openPanel), ids=sectionIds(openPanel); if(!li||!ids) return;
+  const i=ids.indexOf(openPanel), up=li.querySelector('[data-act=up]'), dn=li.querySelector('[data-act=down]');
+  if(up) up.disabled=i<=0; if(dn) dn.disabled=i>=ids.length-1;
+}
+function moveBy(id,dir){
+  const ids=sectionIds(id); if(!ids) return; const i=ids.indexOf(id), j=i+dir; if(i<0||j<0||j>=ids.length) return;
+  ids.splice(i,1); ids.splice(j,0,id);
+  if(moveItem(id,ids[j-1]||null,ids[j+1]||null)){
+    lsSet(TIP_DRAG,'1'); renderTodo();
+    const li=liOf(id); if(li){ try{ li.scrollIntoView({block:'nearest',behavior:'smooth'}); }catch(x){} }
+  }
+}
+
+/* ---------- ならびかえ: ながおしして ドラッグ（おなじ まとまりの 中で） ---------- */
+const drag={timer:null,li:null,active:false,startX:0,startY:0,lastY:0,scroll0:0,from:0,index:0,sibs:null,rects:null,gap:10,raf:0,suppressClick:false,pointerId:null};
+function dragCancelTimer(){ clearTimeout(drag.timer); drag.timer=null; }
+function dragPrepare(li,x,y){
+  dragCancelTimer(); drag.li=null;
+  if(!li||drag.active||openPanel===li.dataset.id||leaving.has(li.dataset.id)) return;
+  drag.li=li; drag.startX=x; drag.startY=y; drag.lastY=y;
+  drag.timer=setTimeout(dragBegin,450);
+}
+function dragBegin(){
+  drag.timer=null; const li=drag.li; if(!li||!li.isConnected) return;
+  const sibs=[...li.parentElement.children];
+  drag.active=true; drag.suppressClick=true; drag.sibs=sibs; drag.from=sibs.indexOf(li); drag.index=drag.from; drag.scroll0=window.scrollY;
+  drag.rects=sibs.map(el=>{ const r=el.getBoundingClientRect(); return {top:r.top+window.scrollY,h:r.height}; });
+  drag.gap=sibs.length>1?Math.max(0,drag.rects[1].top-drag.rects[0].top-drag.rects[0].h):10;
+  li.classList.add('dragging'); document.body.classList.add('drag-on');
+  li.style.transform='scale(1.02)';
+  try{ if(navigator.vibrate) navigator.vibrate(15); }catch(x){}
+  drag.raf=requestAnimationFrame(dragLoop);
+}
+function dragMove(y){
+  if(!drag.active) return; drag.lastY=y;
+  const dy=(y-drag.startY)+(window.scrollY-drag.scroll0);
+  const me=drag.rects[drag.from], center=me.top+dy+me.h/2;
+  let idx=drag.from;
+  for(let i=drag.from-1;i>=0;i--){ const r=drag.rects[i]; if(center<r.top+r.h/2) idx=i; else break; }
+  for(let i=drag.from+1;i<drag.sibs.length;i++){ const r=drag.rects[i]; if(center>r.top+r.h/2) idx=i; else break; }
+  drag.index=idx;
+  const shift=me.h+drag.gap;
+  drag.sibs.forEach((el,i)=>{
+    if(i===drag.from){ el.style.transform='translateY('+dy+'px) scale(1.02)'; return; }
+    let t=0; if(drag.from<idx&&i>drag.from&&i<=idx) t=-shift; else if(drag.from>idx&&i<drag.from&&i>=idx) t=shift;
+    el.style.transform=t?'translateY('+t+'px)':'';
+  });
+}
+function dragLoop(){ // 画面の はしに ちかいと 自動で スクロール
+  drag.raf=0; if(!drag.active) return;
+  const vh=window.innerHeight, y=drag.lastY; let v=0;
+  if(y<130) v=-Math.min(14,(130-y)/5); else if(y>vh-160) v=Math.min(14,(y-(vh-160))/5);
+  if(v){ const b=window.scrollY; window.scrollBy(0,v); if(window.scrollY!==b) dragMove(y); }
+  drag.raf=requestAnimationFrame(dragLoop);
+}
+function dragEnd(doCommit){
+  dragCancelTimer();
+  if(!drag.active){ drag.li=null; return; }
+  drag.active=false; if(drag.raf) cancelAnimationFrame(drag.raf); drag.raf=0;
+  const li=drag.li, from=drag.from, to=drag.index, sibs=drag.sibs;
+  sibs.forEach(el=>{ el.style.transform=''; }); if(li) li.classList.remove('dragging'); document.body.classList.remove('drag-on');
+  drag.li=null; drag.sibs=null;
+  if(doCommit&&to!==from&&li){
+    const ids=sibs.map(el=>el.dataset.id); const [m]=ids.splice(from,1); ids.splice(to,0,m);
+    if(moveItem(m,ids[to-1]||null,ids[to+1]||null)){ lsSet(TIP_DRAG,'1'); }
+    renderTodo();
+  }
+  setTimeout(()=>{ drag.suppressClick=false; },400);
+}
+(()=>{
+  const TA=$('todoArea');
+  const rowLi=(t)=>{ if(!t||!t.closest||t.closest('.panel')) return null; return t.closest('li.item'); };
+  TA.addEventListener('touchstart',(e)=>{ if(e.touches.length!==1){ dragEnd(false); return; } const t=e.touches[0]; dragPrepare(rowLi(e.target),t.clientX,t.clientY); },{passive:true});
+  TA.addEventListener('touchmove',(e)=>{
+    const t=e.touches[0]; if(!t) return;
+    if(drag.active){ e.preventDefault(); dragMove(t.clientY); return; }
+    if(drag.timer&&(Math.abs(t.clientX-drag.startX)>8||Math.abs(t.clientY-drag.startY)>8)) dragCancelTimer();
+  },{passive:false});
+  TA.addEventListener('touchend',(e)=>{ if(drag.active&&e.cancelable) e.preventDefault(); dragEnd(true); },{passive:false});
+  TA.addEventListener('touchcancel',()=>dragEnd(false));
+  // パソコンの マウスでも おなじ（ながおし→うごかす）
+  TA.addEventListener('pointerdown',(e)=>{ if(e.pointerType!=='mouse'||e.button!==0) return; drag.pointerId=e.pointerId; dragPrepare(rowLi(e.target),e.clientX,e.clientY); });
+  window.addEventListener('pointermove',(e)=>{
+    if(e.pointerType!=='mouse'||e.pointerId!==drag.pointerId) return;
+    if(drag.active){ e.preventDefault(); dragMove(e.clientY); return; }
+    if(drag.timer&&(Math.abs(e.clientX-drag.startX)>8||Math.abs(e.clientY-drag.startY)>8)) dragCancelTimer();
+  });
+  window.addEventListener('pointerup',(e)=>{ if(e.pointerType!=='mouse'||e.pointerId!==drag.pointerId) return; drag.pointerId=null; dragEnd(true); });
+  TA.addEventListener('click',(e)=>{ if(drag.suppressClick){ e.stopPropagation(); e.preventDefault(); } },true);
+  TA.addEventListener('contextmenu',(e)=>{ if(rowLi(e.target)) e.preventDefault(); });
+  window.addEventListener('blur',()=>dragEnd(false));
+})();
+
 // 日付入力の変更は即保存（保存ボタンを押し忘れても消えない）
 $('todoArea').addEventListener('change',(e)=>{
   const dt=e.target.closest('input[data-role=date]'); if(!dt) return;
@@ -1118,13 +1263,44 @@ $('updateBtn').addEventListener('click',async ()=>{
   }catch(e){ updMsg('いまは たしかめられなかった。ネットに つながっているか 見てね。'); }
 });
 
+/* ---------- ホーム画面に ついかする あんない（アイコンは Apple 公式の 画像） ---------- */
+function renderGuide(){
+  const ver=+((navigator.userAgent.match(/Version\/(\d+)/)||[])[1]||0);
+  const ic=(f,alt)=>'<img class="ic" src="img/ios/'+f+'" alt="'+alt+'">';
+  const share=ic('share.png','共有ボタン');
+  const steps=[]; let note='';
+  if(isInApp){
+    $('guideLead').innerHTML='いまは LINEなどの アプリの 中で ひらいているよ。<br>Safariで ひらきなおしてね。';
+    steps.push('画面の メニューから「<b>Safariで開く</b>」を えらぶ<span class="sub">Safariで ひらくと、つぎの やりかたが 出るよ</span>');
+  }else if(!isIOS){
+    $('guideLead').innerHTML='この アプリは iPhoneで つかうよ。';
+    steps.push('iPhoneの カメラで この QRコードを よみとって、<b>Safari</b>で ひらいてね<img class="qr" src="img/qr.png" alt="QRコード">');
+  }else{
+    if(ver>=26){
+      steps.push('画面の下の '+(ver>=27?ic('pagemenu.png','ページメニューボタン'):ic('more.png','その他ボタン'))+' を タップして、「<b>共有</b>」を タップ<span class="sub">'+share+' が 見えるときは それを タップしてね</span>');
+    }else{
+      steps.push('画面の下の '+share+' を タップ');
+    }
+    steps.push('下に スクロールして「<b>ホーム画面に追加</b>」を タップ');
+    if(ver>=26){
+      const wa=ver>=27?'ウェブアプリとして開く':'Webアプリとして開く';
+      steps.push('「<b>'+wa+'</b>」を オンにして、「<b>追加</b>」を タップ');
+      note='ホーム画面の アイコンから ひらいても この画面に なるときは、アイコンを けして「'+wa+'」を オンにして もういちど ついかしてね。';
+    }else{
+      steps.push('右上の「<b>追加</b>」を タップ');
+    }
+    steps.push('ホーム画面に できた <img class="ic app" src="icons/icon-180.png" alt="やることリスト"> を タップして ひらいてね');
+  }
+  $('guideSteps').innerHTML=steps.map(t=>'<li>'+t+'</li>').join('');
+  $('guideNote').hidden=!note; $('guideNote').textContent=note;
+}
+
 /* ---------- boot ---------- */
 renderToday();
 setInterval(renderToday,60000);
 loadSync();
 $('newText').disabled=false; $('addBtn').disabled=false;
-$('inAppBanner').hidden=!(isInApp&&!isStandalone);
-$('safariBanner').hidden=!(isIOS&&!isStandalone&&!isInApp);
+if(!isStandalone){ document.body.classList.add('browser'); renderGuide(); $('installGuide').hidden=false; }
 renderAll();
 if(recovered){ showToast('ひかえから もとに もどしたよ',{ms:4000}); }
 enqueue(loadIdb); // 保存より先に 控えを 読む
@@ -1132,7 +1308,7 @@ enqueue(loadIdb); // 保存より先に 控えを 読む
 // テスト・診断用の入口（画面からは見えない）
 window.__yarukoto={
   get state(){ return state; }, get loaded(){ return loaded; }, get loadedFrom(){ return loadedFrom; }, get lastSave(){ return lastSave; }, get recovered(){ return recovered; },
-  KEY,BAK,DRAFT,addItem,updateItem,setDone,deleteItem,restoreTrash,emptyTrash,moveDoneToTrash,backupText,parseBackup,importState,renderAll,save,flushDraft,mergeStates,
+  KEY,BAK,DRAFT,TIP_DRAG,addItem,updateItem,moveItem,sortKey,setDone,deleteItem,restoreTrash,emptyTrash,moveDoneToTrash,backupText,parseBackup,importState,renderAll,save,flushDraft,mergeStates,
   idbLatest:()=>idb.get('latest'), idbKeys:()=>idb.keys(), idbGet:(k)=>idb.get(k), get idbWriteOk(){ return idbWriteOk; }, idbFlush:()=>idbQueue, get isStandalone(){ return isStandalone; },
 };
 })();
