@@ -293,6 +293,23 @@ details[open] summary::before{content:"▼"}
 .toast button{min-height:48px;padding:0 18px;border-radius:12px;background:rgba(255,255,255,.22);color:#fff;font-weight:700;font-size:17px}
 
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+/* 12月5日だけ: あいかちゃんの 誕生日（1日だけ 特別デザイン） */
+html.bday,body.bday{--bg:#FFF5F8}
+body.bday .top{background:linear-gradient(120deg,#FFB3CD 0%,#FFD98A 100%);box-shadow:0 2px 8px rgba(240,112,154,.3);cursor:pointer}
+body.bday .top .date b{color:var(--pink-text)}
+.bdayov{position:fixed;inset:0;z-index:45;display:flex;align-items:center;justify-content:center;overflow:auto;
+  padding:calc(env(safe-area-inset-top,0px) + 16px) 20px calc(env(safe-area-inset-bottom,0px) + 16px);
+  background:radial-gradient(circle at 50% 28%,#FFF6CF 0%,#FFE0EA 55%,#FFC7DA 100%)}
+.bdayov[hidden]{display:none}
+.bdaybox{text-align:center;width:100%;max-width:420px;word-break:keep-all}
+.bdaybox img{display:block;width:min(64vw,280px,38vh);height:auto;margin:0 auto 4px;animation:bdayPop .7s ease-out both}
+.bdaydate{display:inline-block;background:#fff;color:var(--pink-text);font-weight:700;font-size:18px;border-radius:999px;padding:4px 18px;margin-bottom:10px;box-shadow:0 2px 6px rgba(240,112,154,.2)}
+.bdaybox h2{font-size:clamp(28px,8.6vw,38px);line-height:1.35;color:var(--ink);margin-bottom:8px}
+.bdaybox h2 b{color:var(--pink-text)}
+.bdaybox p{font-size:18px;line-height:1.6;font-weight:700;color:var(--ink);margin-bottom:22px}
+.bdaybox .btn{min-width:220px;min-height:60px;font-size:20px;background:var(--pink);color:var(--ink);box-shadow:0 3px 0 var(--pink-deep)}
+@keyframes bdayPop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion: reduce){.bdaybox img{animation:none}}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media (min-width:600px){main,.top{max-width:560px;margin-left:auto;margin-right:auto}.top{border-radius:0 0 18px 18px}.tabbar,.toast{max-width:560px;margin:0 auto}.toast{left:0;right:0}}
@@ -449,6 +466,15 @@ details[open] summary::before{content:"▼"}
   <span class="msg" id="toastMsg"></span>
   <button type="button" id="toastBtn" hidden></button>
 </div>
+<div class="bdayov" id="bdayOv" hidden role="dialog" aria-modal="true" aria-labelledby="bdayTitle">
+  <div class="bdaybox">
+    <img src="img/bday.png" alt="" width="280" height="280">
+    <div class="bdaydate">12月5日</div>
+    <h2 id="bdayTitle">あいかちゃん<br><b>誕生日 おめでとう！</b></h2>
+    <p>すてきな 1年に なりますように</p>
+    <button type="button" class="btn primary" id="bdayClose">ありがとう！</button>
+  </div>
+</div>
 <canvas id="confetti"></canvas>
 
 <script>
@@ -464,7 +490,7 @@ details[open] summary::before{content:"▼"}
    ========================================================= */
 (function(){
 'use strict';
-const APP_VERSION='1.5.0';
+const APP_VERSION='1.6.0';
 const KEY='yarukoto.v1', BAK='yarukoto.v1.bak', DRAFT='yarukoto.v1.draft', BROKEN='yarukoto.v1.broken.', TIP_DRAG='yarukoto.v1.tipDrag';
 const DB_NAME='yarukoto', DB_STORE='snap', SNAP_KEEP=30, SNAP_MIN_GAP=60000, PROTECT_KEEP=10, TRASH_DAYS=90, GONE_MAX=5000, SEQ_MAX=9e15;
 const BACKUP_REMIND_DAYS=14;
@@ -875,7 +901,28 @@ function backupText(){
 /* ---------- rendering ---------- */
 let view='todo', filter='all', openPanel=null, leaving=new Set(), settleTimer=null, toastTimer=null, undoItem=null, renderedDay=ymd();
 
-function renderToday(){ $('todayLabel').textContent=fmtDate(new Date()); if(ymd()!==renderedDay){ renderedDay=ymd(); renderTodo(); renderDone(); } }
+function renderToday(){
+  $('todayLabel').innerHTML=esc(fmtDate(new Date()))+(isStandalone&&isBirthday()?' <b>誕生日！</b>':'');
+  if(ymd()!==renderedDay){ renderedDay=ymd(); renderTodo(); renderDone(); renderBirthday(); }
+}
+/* ---------- 12月5日: あいかちゃんの 誕生日（その日だけ お祝い画面と 特別デザイン） ---------- */
+const BDAY_SEEN='yarukoto.v1.bdaySeen';
+function isBirthday(d){ d=d||new Date(); return d.getMonth()===11&&d.getDate()===5; }
+function openBday(){
+  $('bdayOv').hidden=false;
+  const w=innerWidth, h=innerHeight;
+  [[.2,.3],[.8,.3],[.5,.2],[.3,.55],[.7,.55]].forEach(([x,y],i)=>setTimeout(()=>{ if(!$('bdayOv').hidden) confetti(w*x,h*y); },i*260));
+}
+function closeBday(){ $('bdayOv').hidden=true; }
+function renderBirthday(){
+  const on=isStandalone&&isBirthday();
+  document.body.classList.toggle('bday',on); document.documentElement.classList.toggle('bday',on);
+  const m=document.querySelector('.top .mascot'); if(m){ const src=on?'img/bday.png':'img/hello.png'; if(m.getAttribute('src')!==src) m.setAttribute('src',src); }
+  const tc=document.querySelector('meta[name=theme-color]'); if(tc) tc.content=on?'#FFB3CD':'#8ED6EA';
+  if(!on){ closeBday(); return; }
+  const y=String(new Date().getFullYear());
+  if(lsGet(BDAY_SEEN)!==y){ lsSet(BDAY_SEEN,y); openBday(); } // その年の 12月5日に はじめて ひらいた ときだけ
+}
 function renderAll(){ renderHeader(); renderTodo(); renderDone(); renderSettings(); renderStatus(); }
 function renderHeader(){}
 function switchView(v){
@@ -1316,6 +1363,10 @@ function renderGuide(){
   $('guideNote').hidden=!note; $('guideNote').innerHTML=note;
 }
 
+$('bdayClose').addEventListener('click',closeBday);
+document.querySelector('.top').addEventListener('click',()=>{ if(document.body.classList.contains('bday')) openBday(); });
+document.addEventListener('keydown',(e)=>{ if(e.key==='Escape'&&!$('bdayOv').hidden) closeBday(); });
+
 /* ---------- boot ---------- */
 renderToday();
 setInterval(renderToday,60000);
@@ -1323,13 +1374,14 @@ loadSync();
 $('newText').disabled=false; $('addBtn').disabled=false;
 if(!isStandalone){ document.body.classList.add('browser'); renderGuide(); $('installGuide').hidden=false; }
 renderAll();
+renderBirthday();
 if(recovered){ showToast('ひかえから もとに もどしたよ',{ms:4000}); }
 enqueue(loadIdb); // 保存より先に 控えを 読む
 
 // テスト・診断用の入口（画面からは見えない）
 window.__yarukoto={
   get state(){ return state; }, get loaded(){ return loaded; }, get loadedFrom(){ return loadedFrom; }, get lastSave(){ return lastSave; }, get recovered(){ return recovered; },
-  KEY,BAK,DRAFT,TIP_DRAG,openDueSheet,commitAdd,addItem,updateItem,moveItem,sortKey,setDone,deleteItem,restoreTrash,emptyTrash,moveDoneToTrash,backupText,renderAll,save,flushDraft,mergeStates,
+  KEY,BAK,DRAFT,TIP_DRAG,BDAY_SEEN,isBirthday,renderBirthday,openDueSheet,commitAdd,addItem,updateItem,moveItem,sortKey,setDone,deleteItem,restoreTrash,emptyTrash,moveDoneToTrash,backupText,renderAll,save,flushDraft,mergeStates,
   idbLatest:()=>idb.get('latest'), idbKeys:()=>idb.keys(), idbGet:(k)=>idb.get(k), get idbWriteOk(){ return idbWriteOk; }, idbFlush:()=>idbQueue, get isStandalone(){ return isStandalone; },
 };
 })();
