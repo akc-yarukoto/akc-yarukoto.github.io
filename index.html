@@ -90,17 +90,19 @@ main{padding:0 16px}
 body.browser .view,body.browser .tabbar{display:none!important}
 .guide{padding:6px 0 20px}
 .guide h2{font-size:clamp(20px,6.2vw,24px);line-height:1.45;margin:4px 0 6px}
-.guide h2 .nw{white-space:nowrap}
+.guide h2 .nw,.guide .nw{white-space:nowrap}
 .guide h2 b{color:var(--pink-text)}
-.guide .lead{font-size:16px;line-height:1.7;color:var(--muted);font-weight:700;margin-bottom:14px}
+.guide .lead{word-break:keep-all;overflow-wrap:anywhere;font-size:16px;line-height:1.7;color:var(--muted);font-weight:700;margin-bottom:14px}
 .gsteps{list-style:none;display:flex;flex-direction:column;gap:12px;counter-reset:g}
-.gsteps li{position:relative;background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 14px 14px 58px;font-size:18px;line-height:1.75;counter-increment:g;overflow-wrap:anywhere}
+.gsteps li{word-break:keep-all;position:relative;background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 14px 14px 58px;font-size:18px;line-height:1.75;counter-increment:g;overflow-wrap:anywhere}
 .gsteps li::before{content:counter(g);position:absolute;left:14px;top:15px;width:32px;height:32px;border-radius:50%;background:var(--pink-deep);color:#fff;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center}
 .gsteps b{color:var(--sky-deep)}
 .gsteps img.ic{display:inline-block;height:30px;width:auto;vertical-align:middle;margin:-4px 3px 0}
 .gsteps img.app{height:38px;border-radius:9px;box-shadow:0 1px 4px rgba(0,0,0,.18)}
-.gsteps .sub{display:block;font-size:15px;line-height:1.7;color:var(--muted);margin-top:4px}
-.guide .note{margin-top:14px;font-size:15px;line-height:1.7;color:var(--muted)}
+.gsteps .sub{display:block;font-size:14px;line-height:1.7;color:var(--muted);margin-top:4px}
+.gsteps .sub img.ic{height:26px;margin:-4px 2px 0 0}
+@media (max-width:359px){.gsteps li{font-size:16px;padding-left:50px}.gsteps li::before{left:10px}}
+.guide .note{word-break:keep-all;overflow-wrap:anywhere;margin-top:14px;font-size:15px;line-height:1.7;color:var(--muted)}
 .guide .qr{display:block;width:220px;height:220px;margin:6px auto 0;image-rendering:pixelated}
 .hint{background:var(--sky-pale);border-radius:16px;padding:12px 14px;margin:6px 0 10px;font-size:16px;line-height:1.55;color:var(--sky-deep);font-weight:700}
 
@@ -291,7 +293,7 @@ details[open] summary::before{content:"▼"}
   <!-- ===== ホーム画面に ついかする あんない（アプリとして ひらいていない ときだけ） ===== -->
   <section class="guide" id="installGuide" hidden>
     <h2>まずは <b>ホーム画面に ついか</b> <span class="nw">してね</span></h2>
-    <div class="lead" id="guideLead">やることリスト！は アプリにして つかうよ。<br>この 画面では つかえないの。</div>
+    <div class="lead" id="guideLead">やることリスト！は アプリにして つかうよ。<br>※この画面では使えないから注意</div>
     <ol class="gsteps" id="guideSteps"></ol>
     <div class="note" id="guideNote" hidden></div>
   </section>
@@ -439,7 +441,7 @@ details[open] summary::before{content:"▼"}
    ========================================================= */
 (function(){
 'use strict';
-const APP_VERSION='1.3.1';
+const APP_VERSION='1.3.2';
 const KEY='yarukoto.v1', BAK='yarukoto.v1.bak', DRAFT='yarukoto.v1.draft', BROKEN='yarukoto.v1.broken.', TIP_DRAG='yarukoto.v1.tipDrag';
 const DB_NAME='yarukoto', DB_STORE='snap', SNAP_KEEP=30, SNAP_MIN_GAP=60000, PROTECT_KEEP=10, TRASH_DAYS=90, GONE_MAX=5000, SEQ_MAX=9e15;
 const BACKUP_REMIND_DAYS=14;
@@ -1274,31 +1276,31 @@ function renderGuide(){
     $('guideLead').innerHTML='いまは インスタの 中で ひらいているよ。<br>Safariで ひらきなおしてね。';
     steps.push('右上の「<b>•••</b>」を タップ');
     steps.push('「<b>外部ブラウザで開く</b>」を タップ<span class="sub">「Safariで開く」と 出ることも あるよ</span>');
-    steps.push('Safariで ひらくと、つぎの やりかたが 出るよ');
+    steps.push('Safariで ひらくと、<br>つぎの やりかたが 出るよ');
   }else if(isInApp){
     $('guideLead').innerHTML='いまは LINEなどの アプリの 中で ひらいているよ。<br>Safariで ひらきなおしてね。';
-    steps.push('画面の メニューから「<b>Safariで開く</b>」を えらぶ<span class="sub">Safariで ひらくと、つぎの やりかたが 出るよ</span>');
+    steps.push('画面の メニューから<br>「<b>Safariで開く</b>」を えらぶ<span class="sub">Safariで ひらくと、<br>つぎの やりかたが 出るよ</span>');
   }else if(!isIOS){
     $('guideLead').innerHTML='この アプリは iPhoneで つかうよ。';
     steps.push('iPhoneの カメラで この QRコードを よみとって、<b>Safari</b>で ひらいてね<img class="qr" src="img/qr.png" alt="QRコード">');
   }else{
     if(ver>=26){
-      steps.push('画面の下の '+(ver>=27?ic('pagemenu.png','ページメニューボタン'):ic('more.png','その他ボタン'))+' を タップして、「<b>共有</b>」を タップ<span class="sub">'+share+' が 見えるときは それを タップしてね</span>');
+      steps.push('画面の下の '+(ver>=27?ic('pagemenu.png','ページメニューボタン'):ic('more.png','その他ボタン'))+' を タップして、<br>「<b>共有</b>」を タップ<span class="sub">'+share+' が 見えるときは それを タップしてね</span>');
     }else{
       steps.push('画面の下の '+share+' を タップ');
     }
-    steps.push('下に スクロールして「<b>ホーム画面に追加</b>」を タップ');
+    steps.push('下に スクロールして<br>「<b>ホーム画面に追加</b>」を タップ');
     if(ver>=26){
       const wa=ver>=27?'ウェブアプリとして開く':'Webアプリとして開く';
-      steps.push('「<b>'+wa+'</b>」を オンにして、「<b>追加</b>」を タップ');
-      note='ホーム画面の アイコンから ひらいても この画面に なるときは、アイコンを けして「'+wa+'」を オンにして もういちど ついかしてね。';
+      steps.push('「<b>'+wa+'</b>」を<br>オンにして、「<b>追加</b>」を タップ');
+      note='ホーム画面の アイコンから ひらいても この画面に なるときは、アイコンを けして<span class="nw">「'+wa+'」を</span> オンにして もういちど ついかしてね。';
     }else{
       steps.push('右上の「<b>追加</b>」を タップ');
     }
-    steps.push('ホーム画面に できた <img class="ic app" src="icons/icon-180.png" alt="やることリスト"> を タップして ひらいてね');
+    steps.push('ホーム画面に できた <img class="ic app" src="icons/icon-180.png" alt="やることリスト"> を<br>タップして ひらいてね');
   }
   $('guideSteps').innerHTML=steps.map(t=>'<li>'+t+'</li>').join('');
-  $('guideNote').hidden=!note; $('guideNote').textContent=note;
+  $('guideNote').hidden=!note; $('guideNote').innerHTML=note;
 }
 
 /* ---------- boot ---------- */
