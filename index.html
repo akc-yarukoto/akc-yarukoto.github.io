@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>やることリスト！</title>
+<meta name="description" content="あいかちゃんの、かわいい やることリスト">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="やることリスト">
+<meta name="application-name" content="やることリスト">
+<meta name="theme-color" content="#8ED6EA">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- フォントは画面を止めずに後から読む（電波が弱くても起動が固まらない） -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap"></noscript>
+<style>
+:root{
+  color-scheme: light;
+  --sky:#8ED6EA; --sky-mid:#3FB4D6; --sky-deep:#146F8F; --sky-pale:#E4F5FA; --sky-line:#BFE6F2;
+  --pink:#FF9FBE; --pink-deep:#F0709A; --pink-text:#B8305F; --pink-pale:#FFE6EE;
+  --mint:#7ED9B0; --mint-pale:#E3F7EE;
+  --bg:#F2FAFD; --paper:#FFFFFF; --ink:#2E3A46; --muted:#5F717F; --line:#DCE9EF;
+  --warn:#C0392B; --warn-pale:#FFE9E9; --ok:#1F7A5C;
+  --radius:18px; --tab-h:66px; --head-h:92px;
+  --shadow:0 2px 10px rgba(63,180,214,.14);
+  --font:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg);-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font);font-size:17px;line-height:1.5;color:var(--ink);background:var(--bg);
+  padding-bottom:calc(var(--tab-h) + env(safe-area-inset-bottom,0px) + 90px);
+  overscroll-behavior-y:none;min-height:100%;
+}
+button,input,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--sky-deep);outline-offset:2px}
+img{max-width:100%;display:block}
+[hidden]{display:none!important}
+.text,.done-item .text,.trash-list .t{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+
+/* ===== header ===== */
+.top{
+  position:sticky;top:0;z-index:20;background:var(--sky);
+  height:calc(var(--head-h) + env(safe-area-inset-top,0px));
+  padding:calc(env(safe-area-inset-top,0px) + 8px) 16px 8px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 2px 8px rgba(63,180,214,.25);
+}
+.top .mascot{width:70px;height:70px;object-fit:contain;flex:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.08))}
+.top .tt{min-width:0;flex:1}
+.top h1{font-size:22px;line-height:1.2;font-weight:700;color:var(--ink);text-wrap:balance;overflow-wrap:anywhere}
+.top h1 small{display:block;font-size:14px;font-weight:700;color:var(--ink);opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top .date{font-size:14px;color:var(--ink);opacity:.85;margin-top:2px;font-weight:700}
+
+main{padding:0 16px}
+.view{display:block}
+
+/* ===== add bar (ヘッダーと一緒に貼りつく) ===== */
+.addbar{
+  position:sticky;top:calc(var(--head-h) + env(safe-area-inset-top,0px));z-index:15;
+  display:flex;gap:8px;margin:0 -16px;padding:12px 16px 10px;background:var(--bg);
+}
+.addbar input{
+  flex:1;min-width:0;height:56px;padding:0 16px;font-size:18px;
+  background:var(--paper);border:2px solid var(--sky-line);border-radius:16px;
+  box-shadow:var(--shadow);
+}
+.addbar input::placeholder{color:#6B7C89}
+.addbar input:focus{border-color:var(--sky-deep);outline:none}
+.addbar button{
+  flex:none;height:56px;padding:0 18px;border-radius:16px;
+  background:var(--pink);color:var(--ink);font-size:18px;font-weight:700;
+  box-shadow:0 3px 0 var(--pink-deep);
+}
+.addbar button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--pink-deep)}
+.addbar button[disabled]{opacity:.5}
+
+.banner{background:var(--pink-pale);border:2px solid var(--pink);border-radius:16px;padding:12px 14px;margin:6px 0 10px;font-size:16px;line-height:1.55;font-weight:700;color:var(--pink-text)}
+.banner .steps{margin-top:8px;font-weight:500;color:var(--ink);font-size:16px;line-height:1.6}
+.banner button{min-height:44px;padding:0 12px;color:var(--sky-deep);font-weight:700;text-decoration:underline}
+.hint{background:var(--sky-pale);border-radius:16px;padding:12px 14px;margin:6px 0 10px;font-size:16px;line-height:1.55;color:var(--sky-deep);font-weight:700}
+
+.summary{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 2px 8px;font-size:16px;color:var(--muted);flex-wrap:wrap;font-weight:700}
+.summary b{color:var(--sky-deep);font-size:18px}
+.chips{display:flex;gap:10px;flex-wrap:wrap}
+.chip{
+  min-height:44px;padding:0 16px;border-radius:999px;border:2px solid var(--sky-line);
+  background:var(--paper);font-size:16px;font-weight:700;color:var(--muted);
+}
+.chip.on{background:var(--sky-deep);border-color:var(--sky-deep);color:#fff}
+
+/* ===== list ===== */
+.group{margin:8px 0 4px;font-size:16px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px}
+.group.now{color:var(--pink-text)}
+.group.now::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--pink)}
+.list{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.item{
+  background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow);
+  border:2px solid transparent;
+}
+.item.overdue{border-color:var(--pink)}
+.item.leaving{opacity:.6}
+.item.leaving .text{text-decoration:line-through;color:var(--muted)}
+.row{display:flex;align-items:center;min-height:64px}
+.check{
+  flex:none;width:60px;min-height:64px;display:flex;align-items:center;justify-content:center;
+}
+.check i{
+  width:34px;height:34px;border-radius:50%;border:3px solid var(--sky-mid);background:#fff;
+  display:flex;align-items:center;justify-content:center;transition:transform .15s;
+}
+.check i::after{
+  content:"";width:10px;height:18px;border:solid #fff;border-width:0 4px 4px 0;
+  transform:rotate(45deg) translate(-1px,-2px);opacity:0;
+}
+.check:active i{transform:scale(.9)}
+.item.leaving .check i,.check.on i{background:var(--mint);border-color:var(--mint)}
+.item.leaving .check i::after,.check.on i::after{opacity:1}
+.body{flex:1;min-width:0;padding:10px 4px 10px 0}
+.text{font-size:18px;line-height:1.45;word-break:break-word;overflow-wrap:anywhere;white-space:pre-wrap}
+.meta{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.due{font-size:14px;font-weight:700;padding:3px 12px;border-radius:999px;background:var(--sky-pale);color:var(--sky-deep)}
+.due.today{background:var(--pink-pale);color:var(--pink-text)}
+.due.over{background:var(--warn-pale);color:var(--warn)}
+.more{
+  flex:none;width:56px;min-height:64px;color:var(--sky-deep);
+  display:flex;align-items:center;justify-content:center;
+}
+.more svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.more:active{opacity:.6}
+
+/* inline edit panel */
+.panel{border-top:2px dashed var(--line);padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.panel textarea{
+  width:100%;min-height:64px;padding:10px 12px;font-size:18px;line-height:1.45;resize:none;overflow:hidden;
+  border:2px solid var(--sky-line);border-radius:12px;background:#fff;
+}
+.panel textarea:focus{border-color:var(--sky-deep);outline:none}
+.panel .label{font-size:16px;font-weight:700;color:var(--muted)}
+.duerow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.datechip{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:2px solid var(--sky-line);background:var(--paper);font-size:16px;font-weight:700;color:var(--muted);overflow:hidden}
+.datechip.on{background:var(--sky-deep);border-color:var(--sky-deep);color:#fff}
+.datechip input{position:absolute;inset:-2px;width:auto;height:auto;opacity:.01;font-size:16px}
+.btns{display:flex;gap:12px;margin-top:2px;flex-wrap:wrap}
+.btn{
+  min-height:48px;padding:0 16px;border-radius:14px;font-size:16px;font-weight:700;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn.primary{background:var(--sky-deep);color:#fff;box-shadow:0 3px 0 #0E5670}
+.btn.primary:active{transform:translateY(2px);box-shadow:0 1px 0 #0E5670}
+.btn.pink{background:var(--pink);color:var(--ink);box-shadow:0 3px 0 var(--pink-deep)}
+.btn.pink:active{transform:translateY(2px);box-shadow:0 1px 0 var(--pink-deep)}
+.btn.ghost{background:var(--sky-pale);color:var(--sky-deep)}
+.btn.danger{background:var(--warn-pale);color:var(--warn)}
+.btn.wide{width:100%}
+.btn.grow{flex:1}
+.btn[disabled]{opacity:.5}
+.sp{flex:1}
+
+/* empty state */
+.empty{text-align:center;padding:26px 10px 10px;color:var(--muted);font-size:17px;font-weight:700}
+.empty img{width:170px;height:170px;object-fit:contain;margin:0 auto 8px}
+
+/* ===== done view ===== */
+.hero{
+  display:flex;align-items:center;gap:12px;background:var(--paper);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:12px 14px;margin:14px 0 12px;
+}
+.hero img{width:84px;height:84px;object-fit:contain;flex:none}
+.hero .big{font-size:20px;font-weight:700;color:var(--pink-text)}
+.hero .sub{font-size:15px;color:var(--muted);margin-top:2px;font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--paper);border-radius:14px;box-shadow:var(--shadow);padding:10px 6px;text-align:center}
+.stat .n{font-size:24px;font-weight:700;color:var(--sky-deep);font-variant-numeric:tabular-nums}
+.stat .l{font-size:14px;color:var(--muted);font-weight:700}
+.done-item .text{color:var(--muted)}
+.done-item .row{min-height:60px;padding-left:14px}
+.done-item .time{font-size:14px;color:var(--muted)}
+.restore{flex:none;min-height:60px;padding:0 16px;color:var(--sky-deep);font-weight:700;font-size:16px}
+
+/* ===== settings ===== */
+.card{background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin:14px 0}
+.card h2{font-size:18px;font-weight:700;color:var(--sky-deep);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.card p{font-size:16px;line-height:1.55;color:var(--muted);margin-bottom:10px}
+.card .stack{display:flex;flex-direction:column;gap:10px}
+.card input[type=text]{
+  width:100%;height:50px;padding:0 14px;font-size:18px;border:2px solid var(--sky-line);border-radius:12px;background:#fff;
+}
+.card textarea{
+  width:100%;min-height:110px;padding:10px 12px;font-size:16px;line-height:1.5;border:2px solid var(--sky-line);border-radius:12px;background:#fff;
+  font-family:ui-monospace,Menlo,monospace;
+}
+.status{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;font-size:16px}
+.status dt{color:var(--muted);font-weight:700}
+.status dd{font-variant-numeric:tabular-nums}
+.ok{color:var(--ok);font-weight:700}
+.ng{color:var(--warn);font-weight:700}
+.trash-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.trash-list li{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:12px;padding:6px 6px 6px 12px;min-height:56px}
+.trash-list .t{flex:1;min-width:0;font-size:17px;overflow-wrap:anywhere}
+.notice{background:var(--pink-pale);color:var(--pink-text);font-weight:700;font-size:16px;line-height:1.55;border-radius:12px;padding:10px 12px;margin-top:12px}
+.notice.calm{background:var(--sky-pale);color:var(--sky-deep)}
+.confirm{background:var(--warn-pale);border-radius:12px;padding:12px;margin-top:8px;font-size:16px;line-height:1.55;font-weight:700;color:var(--warn)}
+.confirm .btns{margin-top:10px}
+.fileinput{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+details summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:var(--sky-deep);cursor:pointer;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▶";font-size:12px;margin-right:8px}
+details[open] summary::before{content:"▼"}
+
+/* ===== tab bar ===== */
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  display:flex;background:var(--paper);border-top:2px solid var(--sky-line);
+  padding:4px 8px calc(env(safe-area-inset-bottom,0px) + 4px);
+  height:calc(var(--tab-h) + env(safe-area-inset-bottom,0px));
+}
+.tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  border-radius:14px;color:var(--muted);font-size:14px;font-weight:700;position:relative;
+}
+.tab svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:var(--sky-deep);background:var(--sky-pale)}
+.tab .badge{
+  position:absolute;transform:translate(20px,-18px);min-width:22px;height:22px;padding:0 6px;border-radius:11px;
+  background:var(--pink);color:var(--ink);font-size:13px;line-height:22px;text-align:center;
+}
+
+/* ===== toast ===== */
+.toast{
+  position:fixed;left:16px;right:16px;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom,0px) + 12px);z-index:40;
+  background:var(--ink);color:#fff;border-radius:16px;padding:10px 12px 10px 16px;
+  display:flex;align-items:center;gap:10px;box-shadow:0 6px 18px rgba(0,0,0,.18);
+  font-weight:700;font-size:17px;line-height:1.4;
+  transition:opacity .2s,transform .2s;
+}
+.toast.hide{opacity:0;transform:translateY(8px);pointer-events:none}
+.toast.praise{background:var(--pink-text)}
+.toast img{width:44px;height:44px;object-fit:contain;flex:none}
+.toast .msg{flex:1}
+.toast button{min-height:48px;padding:0 18px;border-radius:12px;background:rgba(255,255,255,.22);color:#fff;font-weight:700;font-size:17px}
+
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (min-width:600px){main,.top{max-width:560px;margin-left:auto;margin-right:auto}.top{border-radius:0 0 18px 18px}.tabbar,.toast{max-width:560px;margin:0 auto}.toast{left:0;right:0}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <img class="mascot" src="img/hello.png" alt="" width="70" height="70">
+  <div class="tt">
+    <h1><small>あいかの</small>やることリスト！</h1>
+    <div class="date" id="todayLabel"></div>
+  </div>
+</header>
+
+<main>
+  <!-- ===== やること ===== -->
+  <section class="view" id="view-todo">
+    <form class="addbar" id="addForm" autocomplete="off">
+      <input type="text" id="newText" placeholder="なにをする？" maxlength="200" enterkeyhint="done" aria-label="やることを入力" disabled>
+      <button type="submit" id="addBtn" disabled>ついか</button>
+    </form>
+    <div class="banner" id="inAppBanner" hidden>
+      いまは LINEなどの アプリの中で ひらいているよ。このままだと ホーム画面に ついかできないの。<br>
+      画面の メニュー（「…」や 共有マーク）から「Safariで開く」を えらんでね。
+    </div>
+    <div class="banner" id="safariBanner" hidden>
+      ホーム画面に ついかしてから つかってね！<br>ここ（Safari）で 入れたものは、ついか後の アプリには うつらないよ。
+      <button type="button" id="safariHow">やりかたを 見る</button>
+      <div class="steps" id="safariSteps" hidden>① 画面の下の「共有」ボタン（四角から 矢印）を タップ<br>② 「ホーム画面に追加」を タップ<br>③ 右上の「追加」を タップ<br>④ ホーム画面の アイコンから ひらく</div>
+    </div>
+    <div class="hint" id="firstHint" hidden>まえに Safariで つかっていたら、せっていの「バックアップから もどす」で うつせるよ。</div>
+    <div class="summary">
+      <div id="todoSummary"></div>
+      <div class="chips">
+        <button type="button" class="chip on" data-filter="all" id="chipAll">ぜんぶ</button>
+        <button type="button" class="chip" data-filter="today" id="chipToday">きょうまで</button>
+      </div>
+    </div>
+    <div id="todoArea"></div>
+    <div class="empty" id="todoEmpty" hidden>
+      <img src="img/relax.png" alt="" width="170" height="170">
+      <div id="todoEmptyText">やることは なにもないよ〜<br>のんびりしよ！</div>
+    </div>
+  </section>
+
+  <!-- ===== できた！ ===== -->
+  <section class="view" id="view-done" hidden>
+    <div class="hero">
+      <img src="img/yay.png" alt="" width="84" height="84">
+      <div>
+        <div class="big" id="doneHeadline">きょうも えらい！</div>
+        <div class="sub" id="doneSub"></div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="n" id="statToday">0</div><div class="l">きょう</div></div>
+      <div class="stat"><div class="n" id="statWeek">0</div><div class="l">こんしゅう</div></div>
+      <div class="stat"><div class="n" id="statAll">0</div><div class="l">ぜんぶ</div></div>
+    </div>
+    <div id="doneArea"></div>
+    <div class="empty" id="doneEmpty" hidden>
+      <img src="img/cheer.png" alt="" width="170" height="170">
+      <div>まだ ないよ。<br>ひとつ できたら ここに たまるよ！</div>
+    </div>
+    <div id="doneClearWrap" hidden>
+      <button type="button" class="btn ghost wide" id="doneClearBtn">できたリストを ごみばこへ うつす</button>
+      <div class="confirm" id="doneClearConfirm" hidden>
+        できたリストを ぜんぶ ごみばこへ うつす？（ごみばこから いつでも もどせるよ）
+        <div class="btns"><button type="button" class="btn danger grow" id="doneClearYes">うつす</button><button type="button" class="btn ghost grow" id="doneClearNo">やめる</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== せってい ===== -->
+  <section class="view" id="view-settings" hidden>
+    <div class="card">
+      <h2>バックアップ</h2>
+      <p>やることは この スマホに じどうで ほぞんされているよ。スマホを かえるときの ために、ときどき「メモ」アプリに おくっておいてね。（出てきた ならびから「メモ」を えらぶよ）</p>
+      <div class="stack">
+        <button type="button" class="btn primary wide" id="backupShareBtn">メモに おくる</button>
+      </div>
+      <div class="notice calm" id="backupMsg" hidden></div>
+      <textarea id="backupOut" readonly hidden aria-label="バックアップの もじ" style="margin-top:10px"></textarea>
+      <div class="notice" id="backupRemind" hidden></div>
+    </div>
+
+    <div class="card">
+      <h2>バックアップから もどす</h2>
+      <p>メモに おくった もじを ぜんぶ コピーして、下に はりつけてね。いまの やることは けさずに、たりない ものだけ もどすよ。</p>
+      <div class="stack">
+        <textarea id="importText" placeholder="ここを ながおしして「ペースト」" aria-label="バックアップの もじ"></textarea>
+        <button type="button" class="btn primary wide" id="importBtn">もどす</button>
+      </div>
+      <div class="notice calm" id="importMsg" hidden></div>
+    </div>
+
+    <div class="card">
+      <h2>ごみばこ</h2>
+      <p id="trashHint">けしたものは ここに 90日 とっておくよ。</p>
+      <ul class="trash-list" id="trashList"></ul>
+      <div id="trashEmptyWrap" hidden>
+        <div class="btns" style="margin-top:10px"><button type="button" class="btn ghost wide" id="trashEmptyBtn">ごみばこを からにする</button></div>
+        <div class="confirm" id="trashEmptyConfirm" hidden>
+          ごみばこの中身を ぜんぶ けす？ これは もどせないよ。
+          <div class="btns"><button type="button" class="btn danger grow" id="trashEmptyYes">けす</button><button type="button" class="btn ghost grow" id="trashEmptyNo">やめる</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>ほぞんの じょうたい</h2>
+      <dl class="status">
+        <dt>さいごの ほぞん</dt><dd id="stLast">—</dd>
+        <dt>ほぞん</dt><dd id="stLS">—</dd>
+      </dl>
+      <div class="notice" id="storageWarn" hidden></div>
+      <details style="margin-top:8px">
+        <summary>くわしく</summary>
+        <dl class="status" style="margin-top:6px">
+          <dt>やること</dt><dd id="stTodo">0こ</dd>
+          <dt>できた</dt><dd id="stDone">0こ</dd>
+          <dt>ごみばこ</dt><dd id="stTrash">0こ</dd>
+          <dt>ひかえの ほぞん</dt><dd id="stIDB">—</dd>
+          <dt>どこから ひらいた？</dt><dd id="stFrom">—</dd>
+          <dt>バージョン</dt><dd id="appVersion"></dd>
+        </dl>
+        <div class="stack" style="margin-top:10px"><button type="button" class="btn ghost wide" id="updateBtn">さいしんか たしかめる</button></div>
+        <div class="notice calm" id="updateMsg" hidden></div>
+      </details>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar" aria-label="メニュー">
+  <button type="button" class="tab on" data-view="todo" id="tabTodo">
+    <svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>
+    やること<span class="badge" id="todoBadge" hidden></span>
+  </button>
+  <button type="button" class="tab" data-view="done" id="tabDone">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
+    できた！
+  </button>
+  <button type="button" class="tab" data-view="settings" id="tabSettings">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/></svg>
+    せってい<span class="badge" id="settingsBadge" hidden>!</span>
+  </button>
+</nav>
+
+<div class="toast hide" id="toast" role="status" aria-live="polite">
+  <img id="toastImg" src="img/yay.png" alt="" hidden>
+  <span class="msg" id="toastMsg"></span>
+  <button type="button" id="toastBtn" hidden></button>
+</div>
+<canvas id="confetti"></canvas>
+
+<script>
+/* =========================================================
+   やることリスト！  v1.1
+   データ保存の方針（消えないための多重化）:
+   - 一次: localStorage（同期・即時。書いたら読み返して一致確認）
+   - ひかえ①: localStorage の1つ前の状態 (.bak)
+   - ひかえ②: IndexedDB の「最新」＋ 時間間隔で残すスナップショット＋大きな操作前の保護スナップショット
+   - 起動: localStorage だけで即座に画面を出す（操作はそれまで受け付けない）→ IndexedDB は後追いで読み、
+           候補どうしを「id 単位で新しい方が勝つ」ルールで合体して、どちらにしか無いものも失わない。
+   - seq は時刻ベース（Date.now 以上）で単調増加。壊れたデータは消さず退避する。
+   ========================================================= */
+(function(){
+'use strict';
+const APP_VERSION='1.2.1';
+const KEY='yarukoto.v1', BAK='yarukoto.v1.bak', DRAFT='yarukoto.v1.draft', BROKEN='yarukoto.v1.broken.';
+const DB_NAME='yarukoto', DB_STORE='snap', SNAP_KEEP=30, SNAP_MIN_GAP=60000, PROTECT_KEEP=10, TRASH_DAYS=90, GONE_MAX=5000, SEQ_MAX=9e15;
+const BACKUP_REMIND_DAYS=14;
+
+/* ---------- utils ---------- */
+const $=(id)=>document.getElementById(id);
+const pad=(n)=>String(n).padStart(2,'0');
+const num=(v,d)=>(typeof v==='number'&&isFinite(v))?v:d;
+let uidLast='';
+function uid(){ // みじかい id（バックアップの もじを 短くするため）。同じミリ秒でも かぶらない
+  let r=''; try{ const a=new Uint32Array(2); crypto.getRandomValues(a); r=a[0].toString(36)+a[1].toString(36); }catch(e){ r=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2); }
+  let id=Date.now().toString(36)+r.slice(0,6); if(id===uidLast) id+='x'; uidLast=id; return id;
+}
+function cut(s,n){ const a=Array.from(String(s)); return a.length>n?a.slice(0,n).join(''):String(s); }
+function ymd(d){ d=d||new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function parseYmd(s){ const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||''); if(!m) return null; const d=new Date(+m[1],+m[2]-1,+m[3]); if(isNaN(d)||d.getMonth()!==+m[2]-1||d.getDate()!==+m[3]) return null; return d; }
+function addDays(s,n){ const d=parseYmd(s)||new Date(); d.setDate(d.getDate()+n); return ymd(d); }
+function dayDiff(s){ const d=parseYmd(s); if(!d) return null; const t=parseYmd(ymd()); return Math.round((d-t)/86400000); }
+const WD=['日','月','火','水','木','金','土'];
+function fmtDate(d){ return (d.getMonth()+1)+'月'+d.getDate()+'日（'+WD[d.getDay()]+'）'; }
+function fmtTime(ms){ const d=new Date(ms); return pad(d.getHours())+':'+pad(d.getMinutes()); }
+function fmtDateTime(ms){ const d=new Date(ms); return (d.getMonth()+1)+'/'+d.getDate()+' '+fmtTime(ms); }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function dueLabel(due){
+  const n=dayDiff(due); if(n===null) return null;
+  if(n===0) return {t:'きょう',c:'today'};
+  if(n===1) return {t:'あした',c:''};
+  if(n<0) return {t:(n===-1?'きのう':(-n)+'日 すぎてる'),c:'over'};
+  const d=parseYmd(due); return {t:(d.getMonth()+1)+'/'+d.getDate()+'（'+WD[d.getDay()]+'）',c:''};
+}
+const isStandalone=(()=>{ try{ return navigator.standalone===true||matchMedia('(display-mode: standalone)').matches; }catch(e){ return false; } })();
+const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const isInApp=/Line\/|FBAN|FBAV|Instagram|Twitter|TikTok|MicroMessenger|KAKAOTALK|YJApp/i.test(navigator.userAgent);
+
+/* ---------- state schema ---------- */
+function freshState(){ const now=Date.now(); return {v:1,born:now,seq:now,updatedAt:0,name:'あいか',items:[],trash:[],gone:[],lastBackupAt:0}; }
+function normItem(it){
+  if(!it||typeof it!=='object') return null;
+  if(typeof it.id!=='string'||!it.id||it.id.length>80) return null;
+  if(typeof it.text!=='string') return null;
+  const o={
+    id:it.id, text:cut(it.text,500),
+    done:!!it.done,
+    doneAt:num(it.doneAt,null),
+    due:(typeof it.due==='string'&&parseYmd(it.due))?it.due:null,
+    createdAt:num(it.createdAt,0),
+    updatedAt:num(it.updatedAt,0),
+  };
+  if(o.done&&o.doneAt===null) o.doneAt=o.updatedAt||o.createdAt||Date.now();
+  if(!o.done) o.doneAt=null;
+  if(num(it.deletedAt,null)!==null) o.deletedAt=it.deletedAt;
+  return o;
+}
+function isValidState(o){
+  return !!o && typeof o==='object' && !Array.isArray(o) && typeof o.v==='number' && Array.isArray(o.items) && (o.trash===undefined||Array.isArray(o.trash));
+}
+let lastDropped=0;
+function normalize(o){
+  const s=freshState();
+  // こわれて とても大きな数に なっても +1 が きちんと ふえる はんいに おさめる
+  s.born=Math.min(Math.max(Math.floor(num(o.born,0)),0),SEQ_MAX);
+  s.seq=Math.min(Math.max(Math.floor(num(o.seq,0)),0),SEQ_MAX);
+  s.updatedAt=num(o.updatedAt,0);
+  s.lastBackupAt=num(o.lastBackupAt,0);
+  s.name=(typeof o.name==='string'&&o.name.trim())?cut(o.name.trim(),20):'あいか';
+  const seen=new Set(); let dropped=0;
+  s.items=o.items.map(normItem).filter(it=>{ if(!it){dropped++;return false;} if(seen.has(it.id)) return false; seen.add(it.id); return true; }).map(it=>{delete it.deletedAt;return it;});
+  s.trash=(o.trash||[]).map(normItem).filter(it=>{ if(!it){dropped++;return false;} if(seen.has(it.id)) return false; seen.add(it.id); return true; }).map(it=>{ if(!it.deletedAt) it.deletedAt=it.updatedAt||Date.now(); return it; });
+  // gone: ごみばこから ほんとうに けした id と その時刻 [[id,t],…]（控えと合体しても 生きかえらないように）
+  s.gone=Array.isArray(o.gone)?o.gone.filter(g=>Array.isArray(g)&&typeof g[0]==='string'&&g[0]&&typeof g[1]==='number'&&isFinite(g[1])).map(g=>[g[0],g[1]]).slice(0,GONE_MAX):[];
+  lastDropped=dropped;
+  return s;
+}
+// id 単位の合体: 同じ id は「より新しく触った方」が勝つ（けした時刻も更新とみなす）
+function stamp(it){ return Math.max(it.updatedAt||0,it.doneAt||0,it.deletedAt||0,it.createdAt||0); }
+function mergeStates(base,other){
+  const out={...base,items:base.items.map(i=>({...i})),trash:base.trash.map(i=>({...i}))};
+  const where=new Map();
+  out.items.forEach((it,i)=>where.set(it.id,{list:'items',i}));
+  out.trash.forEach((it,i)=>where.set(it.id,{list:'trash',i}));
+  let changed=false;
+  const consider=(it,list)=>{
+    const w=where.get(it.id);
+    if(!w){ const c={...it}; if(list==='items') delete c.deletedAt; out[list].push(c); where.set(it.id,{list,i:out[list].length-1}); changed=true; return; }
+    const cur=out[w.list][w.i];
+    if(stamp(it)>stamp(cur)){ const c={...it}; if(list==='items') delete c.deletedAt; out[w.list][w.i]=null; out[list].push(c); where.set(it.id,{list,i:out[list].length-1}); changed=true; }
+  };
+  other.items.forEach(it=>consider(it,'items'));
+  other.trash.forEach(it=>consider(it,'trash'));
+  out.items=out.items.filter(Boolean); out.trash=out.trash.filter(Boolean);
+  // けした印（gone）を 両方ぶん合わせ、印より あとに さわっていない ものは のぞく
+  const gm=new Map();
+  for(const g of (base.gone||[]).concat(other.gone||[])){ if(!gm.has(g[0])||gm.get(g[0])<g[1]) gm.set(g[0],g[1]); }
+  if(gm.size){
+    const alive=(it)=>!(gm.has(it.id)&&stamp(it)<=gm.get(it.id));
+    const ni=out.items.filter(alive), nt=out.trash.filter(alive);
+    if(ni.length!==out.items.length||nt.length!==out.trash.length) changed=true;
+    out.items=ni; out.trash=nt;
+  }
+  out.gone=Array.from(gm.entries()).sort((a,b)=>b[1]-a[1]).slice(0,GONE_MAX);
+  if(other.seq>out.seq){ out.seq=other.seq; out.name=other.name; out.updatedAt=Math.max(out.updatedAt,other.updatedAt); changed=true; }
+  out.lastBackupAt=Math.max(out.lastBackupAt||0,other.lastBackupAt||0);
+  out.born=Math.min(out.born||0,other.born||0)||out.born||other.born||0;
+  return {state:out,changed};
+}
+
+/* ---------- localStorage safe wrappers ---------- */
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); return localStorage.getItem(k)===v; }catch(e){ return false; } }
+function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+function lsAvailable(){ try{ const t='__yarukoto_t'; localStorage.setItem(t,'1'); const ok=localStorage.getItem(t)==='1'; localStorage.removeItem(t); return ok; }catch(e){ return false; } }
+function parseState(raw){ try{ const o=JSON.parse(String(raw).replace(/^﻿/,'')); if(isValidState(o)) return normalize(o); }catch(e){} return null; }
+
+/* ---------- IndexedDB（タイムアウト付き。固まっても本体は止めない） ---------- */
+const idb={
+  db:null, ok:false, lastError:null,
+  open(){
+    return new Promise((res)=>{
+      if(this.db) return res(true);
+      let settled=false; const done=(v)=>{ if(!settled){settled=true;res(v);} };
+      try{
+        if(!window.indexedDB) return done(false);
+        const r=indexedDB.open(DB_NAME,1);
+        r.onupgradeneeded=(e)=>{ const d=e.target.result; if(!d.objectStoreNames.contains(DB_STORE)) d.createObjectStore(DB_STORE,{keyPath:'key'}); };
+        r.onsuccess=(e)=>{ this.db=e.target.result; this.ok=true; this.db.onversionchange=()=>{ try{this.db.close();}catch(x){} this.db=null; this.ok=false; }; this.db.onclose=()=>{ this.db=null; this.ok=false; }; done(true); };
+        r.onerror=()=>{ this.lastError=r.error; this.ok=false; done(false); };
+        r.onblocked=()=>{ done(false); };
+        setTimeout(()=>done(false),3000);
+      }catch(e){ this.lastError=e; done(false); }
+    });
+  },
+  // 仕事1つ: {ok:true,val} か {ok:false} を 返す（失敗と「中身が空」を 区別する）
+  txR(mode,fn){
+    return new Promise(async (res)=>{
+      let settled=false; const done=(v)=>{ if(!settled){settled=true;res(v);} };
+      if(!(await this.open())) return done({ok:false});
+      const timer=setTimeout(()=>{ this.lastError=new Error('timeout'); try{this.db&&this.db.close();}catch(x){} this.db=null; this.ok=false; done({ok:false}); },6000);
+      try{
+        const t=this.db.transaction(DB_STORE,mode); const st=t.objectStore(DB_STORE);
+        let out=null; const req=fn(st);
+        if(req){ req.onsuccess=()=>{ out=req.result; }; }
+        t.oncomplete=()=>{ clearTimeout(timer); done({ok:true,val:(out===undefined?null:out)}); };
+        t.onerror=()=>{ clearTimeout(timer); this.lastError=t.error; done({ok:false}); };
+        t.onabort=()=>{ clearTimeout(timer); this.lastError=t.error; done({ok:false}); };
+      }catch(e){ clearTimeout(timer); this.lastError=e; this.db=null; this.ok=false; done({ok:false}); }
+    });
+  },
+  tx(mode,fn){ return this.txR(mode,fn).then(r=>r.ok?r.val:null); },
+  put(rec){ return this.tx('readwrite',st=>st.put(rec)); },
+  get(key){ return this.tx('readonly',st=>st.get(key)); },
+  getR(key){ return this.txR('readonly',st=>st.get(key)); },
+  keys(){ return this.tx('readonly',st=>st.getAllKeys()); },
+  del(key){ return this.tx('readwrite',st=>st.delete(key)); },
+};
+let idbWriteOk=null; // null=まだ, true/false
+let idbQueue=Promise.resolve();
+let lastSnapAt=0;
+const snapKey=(seq)=>'s'+String(seq).padStart(14,'0');
+/* 書き込みは 1本の列で 順番に。列の中の仕事は 列に 新しい仕事を 足して 待っては いけない（待ち合いで止まる）。
+   念のため、前の仕事が 20秒たっても 終わらなければ 次へ進む（列が 永遠に止まらない） */
+function enqueue(fn){
+  const prev=idbQueue;
+  idbQueue=Promise.race([prev,new Promise(r=>setTimeout(r,20000))]).then(fn).catch(()=>{});
+  return idbQueue;
+}
+// まだ 始まっていない 書き込みが あれば それに まとめる（書くのは その時の いちばん新しい state）
+let idbPending=false, idbPendingBig=false;
+function idbSave(seq,json,big){
+  idbPendingBig=idbPendingBig||!!big;
+  if(idbPending) return idbQueue;
+  idbPending=true;
+  return enqueue(()=>{ idbPending=false; const b=idbPendingBig; idbPendingBig=false; return idbWrite(state.seq,JSON.stringify(state),b); });
+}
+// 合体で「こちらに なかった もの（または より新しい もの）」が ふえたか
+function gainedFrom(before,after){
+  const have=new Map(); for(const it of before.items.concat(before.trash)) have.set(it.id,stamp(it));
+  return after.items.concat(after.trash).some(it=>!have.has(it.id)||stamp(it)>have.get(it.id));
+}
+let idbLoadedOK=false; // 起動後に IndexedDB の 控えを ちゃんと 読めたか
+function parseBorn(json){ try{ return JSON.parse(json).born; }catch(e){ return undefined; } }
+// 控えの 中身を いまの state に 合体する（id ごとに 新しい方が 勝つ・けした印は 守る）。変わったら 保存して 描きなおす
+function absorb(other){
+  const before=JSON.stringify(state);
+  const m=mergeStates(state,other);
+  if(JSON.stringify(m.state)===before) return false;
+  if(gainedFrom(state,m.state)){ recovered=true; if(!/ひかえ/.test(loadedFrom)) loadedFrom+='＋ひかえ'; showToast('ひかえから もとに もどしたよ',{ms:4000}); }
+  state=m.state; state.seq=Math.max(state.seq+1,Date.now()); state.updatedAt=Date.now();
+  const json=JSON.stringify(state); lsSet(BAK,before); lsSet(KEY,json);
+  if(freshBoot&&(state.items.length||state.trash.length)) freshBoot=false;
+  try{ renderAll(); }catch(e){}
+  return true;
+}
+async function idbWrite(seq,json,big){
+  try{
+    const now=Date.now();
+    const g=await idb.getR('latest');
+    if(!g.ok){ idbWriteOk=false; renderStatus(); return; } // 読めないときは 控えを 上書きしない（中身が 消えるかもしれないので）
+    const cur=g.val;
+    let mine=JSON.parse(json);
+    if(cur&&typeof cur.json==='string'&&(!idbLoadedOK||parseBorn(cur.json)!==mine.born)){
+      // まだ 合体していない 控え（または べつの ながれ）: 先に 合体してから 書く
+      const cs=parseState(cur.json);
+      if(cs&&absorb(cs)){ json=JSON.stringify(state); seq=state.seq; mine=state; }
+    }
+    idbLoadedOK=true;
+    if(cur&&typeof cur.seq==='number'&&Math.min(cur.seq,SEQ_MAX)>seq&&parseBorn(cur.json)===mine.born){ /* 他タブがもっと新しい: 上書きしない */ }
+    else{
+      const r1=await idb.put({key:'latest',seq,updatedAt:now,json});
+      const back=await idb.get('latest');
+      idbWriteOk=(r1!==null)&&!!back&&back.seq===seq;
+    }
+    if(big||now-lastSnapAt>=SNAP_MIN_GAP){
+      const r2=await idb.put({key:snapKey(seq),seq,updatedAt:now,json});
+      if(r2!==null){ lastSnapAt=now; }
+      const keys=await idb.keys();
+      if(Array.isArray(keys)){
+        const snaps=keys.filter(k=>typeof k==='string'&&k[0]==='s').sort().reverse();
+        for(const k of snaps.slice(SNAP_KEEP)) await idb.del(k);
+        const prot=keys.filter(k=>typeof k==='string'&&k[0]==='p').sort().reverse();
+        for(const k of prot.slice(PROTECT_KEEP)) await idb.del(k);
+      }
+    }
+    renderStatus();
+  }catch(e){ idbWriteOk=false; renderStatus(); }
+}
+function idbProtect(tag,json){ // 大きな操作の前に、間引かれない退避を残す
+  const seq=state.seq;
+  return enqueue(()=>idb.put({key:'p-'+tag+'-'+String(Date.now()).padStart(14,'0'),seq,updatedAt:Date.now(),json}));
+}
+
+/* ---------- store ---------- */
+let state=freshState();
+let bootSeq=0, loaded=false, loadedFrom='—', lastSave={t:0,lsOk:null}, recovered=false, brokenSaved=0, freshBoot=false, saveWarned=false;
+
+function stashBroken(raw,i){
+  if(!raw) return;
+  const k=BROKEN+Date.now()+'.'+i;
+  if(lsSet(k,raw)) brokenSaved++;
+  enqueue(()=>idb.put({key:'broken-'+Date.now()+'-'+i,seq:0,updatedAt:Date.now(),json:String(raw)}));
+}
+function pickAndMerge(cands){ // cands: [{src,state}]
+  cands.sort((a,b)=>(b.state.seq-a.state.seq)||(b.state.updatedAt-a.state.updatedAt));
+  let best=cands[0].state, src=cands[0].src, changed=false;
+  for(const c of cands.slice(1)){ const m=mergeStates(best,c.state); if(m.changed){ changed=true; best=m.state; } }
+  return {state:best,src,changed};
+}
+// 第1段: localStorage だけで同期的に決める（起動を止めない）
+function loadSync(){
+  const raw=lsGet(KEY), rawB=lsGet(BAK);
+  const p=parseState(raw); if(p&&lastDropped){ stashBroken(raw,'d0'); recovered=true; }
+  const pb=p?null:parseState(rawB);
+  if(p){ state=p; loadedFrom='この スマホ'; }
+  else if(pb){ state=pb; loadedFrom='この スマホ（ひかえ）'; recovered=true; if(raw!==null) stashBroken(raw,0); }
+  else{
+    if(raw!==null) stashBroken(raw,0);
+    if(rawB!==null) stashBroken(rawB,1);
+    state=freshState(); freshBoot=true; loadedFrom=(raw!==null||rawB!==null)?'よめなかったので あたらしく':'あたらしく';
+    if(raw!==null||rawB!==null) recovered=true;
+  }
+  applyDraft();
+  purgeTrash();
+  loaded=true;
+  bootSeq=state.seq;
+  const json=JSON.stringify(state);
+  if(raw!==json){ if(p&&raw!==rawB) lsSet(BAK,raw); lsSet(KEY,json); } // 壊れた中身で 控えを 上書きしない
+  try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(()=>{}); }catch(e){}
+}
+// 第2段: IndexedDB を後追いで読み、より新しい・こちらに無いものを合体
+let idbRetry=0;
+function retryLoadIdb(){ if(idbLoadedOK||idbRetry>=10) return; idbRetry++; setTimeout(()=>enqueue(loadIdb),Math.min(2000*idbRetry,10000)); }
+async function loadIdb(){
+  if(idbLoadedOK) return;
+  if(!(await idb.open())){ idbWriteOk=false; renderStatus(); retryLoadIdb(); return; }
+  const cands=[];
+  const g=await idb.getR('latest');
+  if(!g.ok){ idbWriteOk=false; renderStatus(); retryLoadIdb(); return; }
+  const latest=g.val;
+  if(latest&&typeof latest.json==='string'){ const s=parseState(latest.json); if(s) cands.push({src:'ひかえ',state:s}); else stashBroken(latest.json,'idb'); }
+  if(!cands.length){
+    const keys=await idb.keys();
+    if(Array.isArray(keys)){
+      const snaps=keys.filter(k=>typeof k==='string'&&(k[0]==='s'||k[0]==='p')).sort().reverse().slice(0,5);
+      for(const k of snaps){ const r=await idb.get(k); if(r&&typeof r.json==='string'){ const s=parseState(r.json); if(s) cands.push({src:'ひかえ（まえの）',state:s}); } }
+    }
+  }
+  if(cands.length){
+    const before=JSON.stringify(state), prevState=state;
+    // あたらしく はじめた ときは 控えの方を 土台にする（seq を 0 あつかい）
+    const own=freshBoot?{...state,seq:0,updatedAt:0}:state;
+    const r=pickAndMerge([{src:loadedFrom,state:own}].concat(cands));
+    if(freshBoot&&(r.state.items.length||r.state.trash.length)){ freshBoot=false; }
+    if(JSON.stringify(r.state)!==before){
+      const usedIdb=r.src!==loadedFrom, gained=gainedFrom(prevState,r.state);
+      state=r.state;
+      if(usedIdb) loadedFrom=r.src; else if(gained) loadedFrom+='＋ひかえ';
+      if(gained) recovered=true;
+      state.seq=Math.max(state.seq+1,Date.now()); state.updatedAt=Date.now();
+      const json=JSON.stringify(state); if(prevState.items.length||prevState.trash.length) lsSet(BAK,before); lsSet(KEY,json);
+      renderAll();
+      if(gained) showToast('ひかえから もとに もどしたよ',{ms:4000});
+    }
+  }
+  idbLoadedOK=true;
+  await idbWrite(state.seq,JSON.stringify(state),true); // 列の中なので 直接書く
+}
+function applyDraft(){
+  const raw=lsGet(DRAFT); if(!raw) return;
+  try{ const d=JSON.parse(raw); const it=state.items.find(i=>i.id===d.id); if(it&&typeof d.text==='string'&&d.text.trim()&&d.t>(it.updatedAt||0)&&d.text!==it.text){ it.text=cut(d.text.trim(),500); it.updatedAt=d.t; } }catch(e){}
+  lsDel(DRAFT);
+}
+function addGone(s,list){ const now=Date.now(); const add=list.map(it=>[it.id,Math.max(now,stamp(it))]); const ids=new Set(add.map(a=>a[0])); s.gone=add.concat((s.gone||[]).filter(g=>!ids.has(g[0]))).slice(0,GONE_MAX); }
+function purgeTrash(){
+  const now=Date.now(); const lim=now-TRASH_DAYS*86400000;
+  // 時計が大きく飛んでいる（保存時刻より7日以上未来）ときは整理しない
+  if(state.updatedAt&&now-state.updatedAt>7*86400000&&state.trash.some(t=>(t.deletedAt||0)>now)) return;
+  const old=state.trash.filter(t=>!((t.deletedAt||0)>lim));
+  if(old.length) addGone(state,old);
+  state.trash=state.trash.filter(t=>(t.deletedAt||0)>lim).sort((a,b)=>(b.deletedAt||0)-(a.deletedAt||0));
+}
+function save(big){
+  if(!loaded) return false;
+  state.seq=Math.max(Math.floor(state.seq)+1,Date.now()); state.updatedAt=Date.now();
+  const json=JSON.stringify(state);
+  const prev=lsGet(KEY);
+  const lsOk=lsSet(KEY,json);
+  if(lsOk&&prev!==null&&prev!==json){ lsSet(BAK,prev); }
+  lastSave={t:state.updatedAt,lsOk};
+  idbSave(state.seq,json,!!big);
+  renderStatus();
+  if(!lsOk&&!saveWarned){ saveWarned=true; showToast('ほぞんが うまくいかなかったかも。せっていで じょうたいを 見てね',{ms:6000}); }
+  return lsOk;
+}
+// 他タブで新しい保存があれば合体してから変更を適用する
+function adoptNewer(){
+  const raw=lsGet(KEY); if(raw===null) return false;
+  const n=parseState(raw); if(!n) return false;
+  if(n.seq>state.seq){ const m=mergeStates(n,state); state=m.state; return true; }
+  return false;
+}
+function commit(fn,big){ if(!loaded){ showToast('じゅんびちゅう… もういちど おしてね',{ms:2000}); return false; } adoptNewer(); fn(state); return save(big); }
+function healPrimary(){
+  if(!loaded) return;
+  const n=parseState(lsGet(KEY));
+  if(!n||n.seq<state.seq){ lsSet(KEY,JSON.stringify(state)); }
+  enqueue(async ()=>{ const cur=await idb.get('latest'); if(!cur||cur.seq<state.seq){ await idbWrite(state.seq,JSON.stringify(state),false); } });
+}
+window.addEventListener('storage',(e)=>{ if(e.key===KEY){ if(adoptNewer()) renderAll(); } });
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ if(adoptNewer()) renderAll(); if(!idbLoadedOK) enqueue(loadIdb); healPrimary(); renderToday(); } else { flushDraft(); } });
+window.addEventListener('pageshow',()=>{ if(loaded){ if(adoptNewer()) renderAll(); healPrimary(); renderToday(); } });
+window.addEventListener('pagehide',()=>{ flushDraft(); });
+
+/* ---------- operations ---------- */
+function addItem(text,due){
+  text=String(text||'').trim(); if(!text) return null;
+  const it={id:uid(),text:cut(text,500),done:false,doneAt:null,due:due||null,createdAt:Date.now(),updatedAt:Date.now()};
+  const ok=commit(s=>{ s.items.unshift(it); });
+  return ok===false&&!loaded?null:it;
+}
+function findItem(id){ return state.items.find(i=>i.id===id); }
+function updateItem(id,patch){ return commit(s=>{ const it=s.items.find(i=>i.id===id); if(!it) return; Object.assign(it,patch); it.updatedAt=Date.now(); }); }
+function setDone(id,done){ return commit(s=>{ const it=s.items.find(i=>i.id===id); if(!it) return; it.done=!!done; it.doneAt=done?Date.now():null; it.updatedAt=Date.now(); }); }
+function deleteItem(id){ let removed=null; commit(s=>{ const i=s.items.findIndex(x=>x.id===id); if(i<0) return; removed=s.items.splice(i,1)[0]; removed.deletedAt=Date.now(); s.trash.unshift(removed); },true); return removed; }
+function restoreTrash(id){ return commit(s=>{ const i=s.trash.findIndex(x=>x.id===id); if(!(i>=0)) return; const it=s.trash.splice(i,1)[0]; delete it.deletedAt; it.updatedAt=Date.now(); s.items.unshift(it); },true); }
+function emptyTrash(){ idbProtect('clear',JSON.stringify(state)); return commit(s=>{ addGone(s,s.trash); s.trash=[]; },true); }
+function moveDoneToTrash(){ return commit(s=>{ const now=Date.now(); const keep=[]; for(const it of s.items){ if(it.done){ it.deletedAt=now; it.updatedAt=now; s.trash.unshift(it); } else keep.push(it); } s.items=keep; },true); }
+function markBackup(){ commit(s=>{ s.lastBackupAt=Date.now(); }); }
+
+/* ---------- backup / import（ファイルは使わない。もじを「メモ」アプリに おくって、はりつけて もどす） ---------- */
+// 形: 1行目 見出し ／ 2行目 {"app":"yarukoto","v":2,"items":[[id,text,doneAt|0,due|"",createdAt,updatedAt],…]}
+// ごみばこは入れない（もじを短くするため）。
+function backupText(){
+  const d=new Date();
+  const items=state.items.map(i=>[i.id,i.text,i.done?(i.doneAt||i.updatedAt||1):0,i.due||'',i.createdAt||0,i.updatedAt||0]);
+  return 'あいかの やることリスト バックアップ（'+(d.getMonth()+1)+'/'+d.getDate()+'）\n'+JSON.stringify({app:'yarukoto',v:2,at:Date.now(),items});
+}
+function parseBackup(text){
+  let s=String(text||'').replace(/^﻿/,'');
+  const a=s.indexOf('{'), b=s.lastIndexOf('}');
+  if(a<0||b<=a) return {error:'よめなかったよ。メモに おくった もじを ぜんぶ コピーして はりつけてね。'};
+  s=s.slice(a,b+1);
+  let o=null;
+  try{ o=JSON.parse(s); }catch(e){ try{ o=JSON.parse(s.replace(/[“”]/g,'"')); }catch(e2){ o=null; } }
+  if(!o) return {error:'よめなかったよ。もじが とちゅうで きれているかも。ぜんぶ コピーして はりつけてね。'};
+  if(o.app==='yarukoto'&&o.v===2&&Array.isArray(o.items)){
+    const items=o.items.map(r=>Array.isArray(r)?{id:r[0],text:r[1],done:!!r[2],doneAt:r[2]||null,due:r[3]||null,createdAt:r[4],updatedAt:r[5]}:null);
+    return {state:normalize({v:1,seq:0,born:0,items,trash:[]})};
+  }
+  const d=(o.app==='yarukoto'&&o.data)?o.data:o;
+  if(!isValidState(d)) return {error:'これは やることリストの バックアップじゃないみたい。'};
+  return {state:normalize(d)};
+}
+// もどすときは「たりないものを たす」だけ。いまの やることは けさない
+function importState(s){
+  idbProtect('import',JSON.stringify(state));
+  const r=commit(cur=>{
+    // バックアップから もどす ものは「けした印」を はずして 生きかえらせる
+    const ids=new Set(s.items.map(i=>i.id).concat(s.trash.map(i=>i.id)));
+    cur.gone=(cur.gone||[]).filter(g=>!ids.has(g[0]));
+    const m=mergeStates(cur,{...s,gone:[]}); cur.items=m.state.items; cur.trash=m.state.trash; cur.gone=m.state.gone;
+  },true);
+  purgeTrash();
+  return r;
+}
+
+/* ---------- rendering ---------- */
+let view='todo', filter='all', openPanel=null, leaving=new Set(), settleTimer=null, toastTimer=null, undoItem=null, renderedDay=ymd();
+
+function renderToday(){ $('todayLabel').textContent=fmtDate(new Date()); if(ymd()!==renderedDay){ renderedDay=ymd(); renderTodo(); renderDone(); } }
+function renderAll(){ renderHeader(); renderTodo(); renderDone(); renderSettings(); renderStatus(); }
+function renderHeader(){}
+function switchView(v){
+  flushDraft();
+  view=v;
+  ['todo','done','settings'].forEach(k=>{ $('view-'+k).hidden=(k!==v); $('tab'+k[0].toUpperCase()+k.slice(1)).classList.toggle('on',k===v); });
+  window.scrollTo(0,0);
+  if(v==='done') renderDone(); if(v==='settings') renderSettings();
+}
+const pencil='<svg viewBox="0 0 24 24"><path d="M4 20l4.5-1L19 8.5a2.1 2.1 0 0 0-3-3L5.5 16z"/><path d="M14 7l3 3"/></svg>';
+function itemHtml(it){
+  const dl=it.due?dueLabel(it.due):null;
+  const over=dl&&dl.c==='over';
+  const isLeaving=leaving.has(it.id);
+  return '<li class="item'+(over?' overdue':'')+(isLeaving?' leaving':'')+'" data-id="'+esc(it.id)+'">'+
+    '<div class="row">'+
+      '<button type="button" class="check'+(isLeaving?' on':'')+'" data-act="check" aria-label="できた"><i></i></button>'+
+      '<div class="body" data-act="open"><div class="text">'+esc(it.text)+'</div>'+(dl?'<div class="meta"><span class="due '+dl.c+'">'+esc(dl.t)+'</span></div>':'')+'</div>'+
+      '<button type="button" class="more" data-act="open" aria-label="へんしゅう">'+pencil+'</button>'+
+    '</div>'+
+    (openPanel===it.id?panelHtml(it):'')+
+  '</li>';
+}
+function panelHtml(it){
+  const due=it.due||''; const t=ymd(), tm=addDays(t,1);
+  const chip=(v,l)=>'<button type="button" class="chip'+(due===v?' on':'')+'" data-act="due" data-due="'+esc(v)+'">'+l+'</button>';
+  const other=due&&due!==t&&due!==tm; const dl=other?dueLabel(due):null;
+  return '<div class="panel">'+
+    '<textarea data-role="edit" maxlength="500" aria-label="やることを へんしゅう" rows="2">'+esc(it.text)+'</textarea>'+
+    '<div class="label">いつまで？</div>'+
+    '<div class="duerow">'+chip('','なし')+chip(t,'きょう')+chip(tm,'あした')+
+      '<label class="datechip'+(other?' on':'')+'"><span data-role="datelabel">'+(other&&dl?esc(dl.t):'ほかの日')+'</span><input type="date" data-role="date" value="'+esc(due)+'" aria-label="日にちを えらぶ"></label></div>'+
+    '<div class="btns"><button type="button" class="btn danger" data-act="delete">けす</button><span class="sp"></span><button type="button" class="btn ghost" data-act="close">とじる</button><button type="button" class="btn primary" data-act="save" style="min-width:120px">ほぞん</button></div>'+
+  '</div>';
+}
+function renderTodo(){
+  const today=ymd(); renderedDay=today;
+  let items=state.items.filter(i=>!i.done||leaving.has(i.id));
+  const remain=state.items.filter(i=>!i.done).length;
+  const todayN=state.items.filter(i=>!i.done&&i.due&&i.due<=today).length;
+  $('todoSummary').innerHTML=remain?('のこり <b>'+remain+'</b>こ'+(todayN?'・きょうまで <b>'+todayN+'</b>こ':'')):'ぜんぶ おわった！';
+  $('todoBadge').hidden=!todayN; $('todoBadge').textContent=todayN;
+  $('chipAll').classList.toggle('on',filter==='all'); $('chipToday').classList.toggle('on',filter==='today');
+  if(filter==='today') items=items.filter(i=>i.due&&i.due<=today);
+  const groups=[
+    {k:'now',t:'きょうまで',f:i=>i.due&&i.due<=today},
+    {k:'later',t:'そのあと',f:i=>i.due&&i.due>today},
+    {k:'any',t:'いつでも',f:i=>!i.due},
+  ];
+  let html='';
+  for(const g of groups){
+    const list=items.filter(g.f); if(!list.length) continue;
+    if(g.k==='later') list.sort((a,b)=>a.due<b.due?-1:a.due>b.due?1:0);
+    html+='<div class="group'+(g.k==='now'?' now':'')+'">'+g.t+'<span>（'+list.length+'）</span></div><ul class="list">'+list.map(itemHtml).join('')+'</ul>';
+  }
+  $('todoArea').innerHTML=html;
+  $('todoEmpty').hidden=items.length>0;
+  $('todoEmptyText').innerHTML=(filter==='today'&&remain)?'きょうまでの やることは ないよ！':'やることは なにもないよ〜<br>のんびりしよ！';
+  $('firstHint').hidden=!(isStandalone&&freshBoot&&state.items.length===0&&state.trash.length===0);
+  if(openPanel){ const ta=$('todoArea').querySelector('textarea[data-role=edit]'); if(ta) autoGrow(ta); }
+}
+function renderDone(){
+  const done=state.items.filter(i=>i.done&&!leaving.has(i.id)).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
+  const today=ymd(); const now=new Date(); const wk=new Date(now); wk.setDate(now.getDate()-((now.getDay()+6)%7)); const wkS=ymd(wk);
+  const dayOf=(ms)=>ymd(new Date(ms||0));
+  const nToday=done.filter(i=>dayOf(i.doneAt)===today).length;
+  const nWeek=done.filter(i=>dayOf(i.doneAt)>=wkS).length;
+  $('statToday').textContent=nToday; $('statWeek').textContent=nWeek; $('statAll').textContent=done.length;
+  $('doneHeadline').textContent=nToday>=5?'きょう '+nToday+'こ！ すごすぎる！':nToday>=3?'きょう '+nToday+'こ できた！ えらい！':nToday>=1?'きょうも えらい！':done.length?'また ひとつずつ いこう！':'できたら ここで おいわい！';
+  $('doneSub').textContent='あいかちゃんの できたこと';
+  let html=''; let lastDay='';
+  for(const it of done){
+    const d=dayOf(it.doneAt);
+    if(d!==lastDay){ lastDay=d; const dd=parseYmd(d); const lab=d===today?'きょう':d===addDays(today,-1)?'きのう':(dd?fmtDate(dd):'いつか'); html+=(html?'</ul>':'')+'<div class="group">'+lab+'</div><ul class="list">'; }
+    html+='<li class="item done-item" data-id="'+esc(it.id)+'"><div class="row"><div class="body"><div class="text">'+esc(it.text)+'</div><div class="time">'+fmtTime(it.doneAt||0)+' に できた</div></div><button type="button" class="restore" data-act="undone">もどす</button></div></li>';
+  }
+  if(html) html+='</ul>';
+  $('doneArea').innerHTML=html;
+  $('doneEmpty').hidden=done.length>0;
+  $('doneClearWrap').hidden=done.length===0;
+}
+function renderSettings(){
+  const tl=$('trashList');
+  tl.innerHTML=state.trash.map(t=>'<li data-id="'+esc(t.id)+'"><span class="t">'+esc(t.text)+'</span><button type="button" class="btn ghost" data-act="restore">もどす</button></li>').join('');
+  $('trashHint').textContent=state.trash.length?'けしたものは '+TRASH_DAYS+'日 とっておくよ。「もどす」で やることに もどせるよ。':'ごみばこは からっぽ。けしたものは ここに '+TRASH_DAYS+'日 とっておくよ。';
+  $('trashEmptyWrap').hidden=state.trash.length===0;
+  $('appVersion').textContent='v'+APP_VERSION;
+  const days=state.lastBackupAt?Math.floor((Date.now()-state.lastBackupAt)/86400000):null;
+  const need=state.items.length>=3&&(days===null||days>=BACKUP_REMIND_DAYS);
+  $('backupRemind').hidden=!need;
+  $('backupRemind').textContent=days===null?'まだ バックアップを とっていないよ。いちど メモに おくっておくと あんしん！':'さいごの バックアップから '+days+'日。また メモに おくっておこう！';
+  $('settingsBadge').hidden=!need;
+  renderStatus();
+}
+function renderStatus(){
+  $('stLast').textContent=lastSave.t?fmtDateTime(lastSave.t)+(lastSave.lsOk===false?'（！）':' ✓'):(state.updatedAt?fmtDateTime(state.updatedAt)+' ✓':'まだ');
+  $('stTodo').textContent=state.items.filter(i=>!i.done).length+'こ';
+  $('stDone').textContent=state.items.filter(i=>i.done).length+'こ';
+  $('stTrash').textContent=state.trash.length+'こ';
+  const lsok=lsAvailable()&&lastSave.lsOk!==false;
+  $('stLS').innerHTML=lsok?'<span class="ok">だいじょうぶ</span>':'<span class="ng">だめかも</span>';
+  $('stIDB').innerHTML=idbWriteOk===null?'…':idbWriteOk?'<span class="ok">だいじょうぶ</span>':'<span class="ng">だめかも</span>';
+  $('stFrom').textContent=loadedFrom;
+  const w=$('storageWarn');
+  if(!lsok&&idbWriteOk===false){ w.hidden=false; w.textContent='ほぞんが できていないかも。ブラウザの プライベートモードだと ほぞんできないよ。バックアップを とっておいてね。'; }
+  else if(!lsok){ w.hidden=false; w.textContent='メインの ほぞんが つかえないみたい。ひかえには ほぞんできているけど、バックアップを とっておくと あんしん。'; }
+  else if(recovered){ w.hidden=false; w.textContent='メインの ほぞんが よめなかったので、ひかえから もとに もどしたよ。'+(brokenSaved?'（よめなかった データも のこしてあるよ）':''); }
+  else w.hidden=true;
+}
+
+/* ---------- toast / confetti ---------- */
+function showToast(msg,opt){
+  opt=opt||{};
+  const t=$('toast'); clearTimeout(toastTimer);
+  $('toastMsg').textContent=msg;
+  $('toastImg').hidden=!opt.img; if(opt.img) $('toastImg').src=opt.img;
+  const b=$('toastBtn'); b.hidden=!opt.button; b.textContent=opt.button||''; b.onclick=opt.onButton||null;
+  t.classList.toggle('praise',!!opt.praise);
+  t.classList.remove('hide');
+  toastTimer=setTimeout(()=>{ t.classList.add('hide'); undoItem=null; },opt.ms||3000);
+}
+function hideToast(){ clearTimeout(toastTimer); $('toast').classList.add('hide'); }
+// キーボードが出ている間はトーストを持ち上げる
+if(window.visualViewport){ const vv=window.visualViewport; const adj=()=>{ const kb=Math.max(0,window.innerHeight-vv.height-vv.offsetTop); $('toast').style.transform=kb>80?('translateY(-'+kb+'px)'):''; }; vv.addEventListener('resize',adj); vv.addEventListener('scroll',adj); }
+const PRAISE=['やったね！','えらい！','すごい！','その ちょうし！','ナイス！','がんばった！','さすが！'];
+function confetti(x,y){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const c=$('confetti'); const ctx=c.getContext('2d'); if(!ctx) return;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  c.width=innerWidth*dpr; c.height=innerHeight*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  const cols=['#FF9FBE','#8ED6EA','#FFE082','#7ED9B0','#C9A7FF','#fff'];
+  const ps=Array.from({length:36},()=>({x,y,vx:(Math.random()-.5)*9,vy:-Math.random()*8-3,r:Math.random()*5+3,c:cols[Math.random()*cols.length|0],a:Math.random()*6,s:Math.random()*.3+.05}));
+  let t0=null;
+  function step(ts){
+    if(!t0) t0=ts; const el=ts-t0;
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    for(const p of ps){ p.x+=p.vx; p.y+=p.vy; p.vy+=.35; p.a+=p.s; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.a); ctx.fillStyle=p.c; ctx.globalAlpha=Math.max(0,1-el/900); ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r); ctx.restore(); }
+    if(el<900) requestAnimationFrame(step); else ctx.clearRect(0,0,innerWidth,innerHeight);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ---------- 編集の下書き（打つたびに軽く保存、少し止まったら本保存） ---------- */
+let draftTimer=null, draftId=null, draftText=null;
+function autoGrow(ta){ ta.style.height='auto'; ta.style.height=Math.max(64,ta.scrollHeight+4)+'px'; }
+function flushDraft(){
+  clearTimeout(draftTimer); draftTimer=null;
+  if(draftId&&typeof draftText==='string'){ const t=draftText.trim(); const it=findItem(draftId); if(it&&t&&t!==it.text) updateItem(draftId,{text:cut(t,500)}); }
+  draftId=null; draftText=null; lsDel(DRAFT);
+}
+function updateMetaInPlace(li,id){
+  const it=findItem(id); const lab=it&&it.due?dueLabel(it.due):null;
+  const body=li.querySelector('.body'); const old=li.querySelector('.meta'); if(old) old.remove();
+  if(body&&lab) body.insertAdjacentHTML('beforeend','<div class="meta"><span class="due '+lab.c+'">'+esc(lab.t)+'</span></div>');
+  const v=it&&it.due?it.due:''; const t=ymd(), tm=addDays(t,1);
+  li.querySelectorAll('.chip[data-act=due]').forEach(c=>c.classList.toggle('on',(c.dataset.due||'')===v));
+  const dc=li.querySelector('.datechip'); const dl=li.querySelector('[data-role=datelabel]'); const dt=li.querySelector('input[data-role=date]');
+  const other=v&&v!==t&&v!==tm;
+  if(dc) dc.classList.toggle('on',!!other); if(dl) dl.textContent=other&&lab?lab.t:'ほかの日'; if(dt) dt.value=v;
+  li.classList.toggle('overdue',!!(lab&&lab.c==='over'));
+}
+
+/* ---------- events ---------- */
+$('addForm').addEventListener('submit',(e)=>{
+  e.preventDefault();
+  const inp=$('newText'); const text=inp.value.trim(); if(!text) return;
+  if(!loaded){ showToast('じゅんびちゅう… もういちど おしてね',{ms:2000}); return; }
+  const it=addItem(text,null);
+  inp.value='';
+  openPanel=null; if(filter!=='all'){ filter='all'; } renderTodo(); renderStatus();
+  if(!it) showToast('ついかできなかった。もういちど ためしてね',{ms:3000});
+  try{ inp.focus({preventScroll:true}); }catch(x){}
+});
+document.querySelectorAll('.chip[data-filter]').forEach(b=>b.addEventListener('click',()=>{ filter=b.dataset.filter; renderTodo(); }));
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+$('safariHow').addEventListener('click',()=>{ $('safariSteps').hidden=!$('safariSteps').hidden; });
+
+function settleLeaving(){
+  clearTimeout(settleTimer);
+  settleTimer=setTimeout(()=>{
+    const focusInList=$('todoArea').contains(document.activeElement)&&document.activeElement.tagName==='TEXTAREA';
+    if(focusInList){ settleLeaving(); return; } // 編集中はリストを組み替えない
+    leaving.clear(); renderTodo(); renderDone();
+  },2500);
+}
+$('todoArea').addEventListener('click',(e)=>{
+  const btn=e.target.closest('[data-act]'); if(!btn) return;
+  const li=e.target.closest('li.item'); if(!li) return; const id=li.dataset.id; const act=btn.dataset.act;
+  if(act==='check'){
+    if(leaving.has(id)){ leaving.delete(id); setDone(id,false); li.classList.remove('leaving'); btn.classList.remove('on'); settleLeaving(); return; }
+    const r=btn.getBoundingClientRect(); const cx=r.left+r.width/2, cy=r.top+r.height/2;
+    setDone(id,true); leaving.add(id);
+    li.classList.add('leaving'); btn.classList.add('on');
+    settleLeaving();
+    confetti(cx,cy);
+    showToast(PRAISE[Math.random()*PRAISE.length|0],{praise:true,img:'img/yay.png',ms:1800});
+    return;
+  }
+  if(act==='open'){ if(leaving.has(id)) return; flushDraft(); openPanel=(openPanel===id)?null:id; renderTodo(); if(openPanel){ const ta=$('todoArea').querySelector('li[data-id="'+CSS.escape(id)+'"] textarea'); if(ta){ autoGrow(ta); try{ ta.focus({preventScroll:false}); ta.setSelectionRange(ta.value.length,ta.value.length); }catch(x){} } } return; }
+  if(act==='due'){ const v=btn.dataset.due||null; updateItem(id,{due:v}); updateMetaInPlace(li,id); return; }
+  if(act==='save'){ const ta=li.querySelector('textarea[data-role=edit]'); const text=(ta?ta.value:'').trim(); if(!text){ showToast('なにか 書いてね',{ms:1500}); return; } draftId=null; draftText=null; lsDel(DRAFT); clearTimeout(draftTimer); updateItem(id,{text:cut(text,500)}); openPanel=null; renderTodo(); showToast('ほぞん したよ',{ms:1200}); return; }
+  if(act==='close'){ flushDraft(); openPanel=null; renderTodo(); return; }
+  if(act==='delete'){
+    flushDraft();
+    const removed=deleteItem(id); openPanel=null; renderTodo(); renderSettings();
+    if(removed){ undoItem=removed.id; showToast('「'+cut(removed.text,12)+(Array.from(removed.text).length>12?'…':'')+'」を けしたよ',{button:'もどす',ms:5000,onButton:()=>{ if(undoItem){ restoreTrash(undoItem); undoItem=null; } hideToast(); renderTodo(); renderSettings(); }}); }
+    return;
+  }
+});
+// 日付入力の変更は即保存（保存ボタンを押し忘れても消えない）
+$('todoArea').addEventListener('change',(e)=>{
+  const dt=e.target.closest('input[data-role=date]'); if(!dt) return;
+  const li=e.target.closest('li.item'); if(!li) return;
+  const v=dt.value&&parseYmd(dt.value)?dt.value:null; updateItem(li.dataset.id,{due:v});
+  updateMetaInPlace(li,li.dataset.id);
+});
+$('todoArea').addEventListener('input',(e)=>{
+  const ta=e.target.closest('textarea[data-role=edit]'); if(!ta) return;
+  const li=e.target.closest('li.item'); if(!li) return;
+  autoGrow(ta);
+  const text=ta.value; if(!text.trim()) return;
+  draftId=li.dataset.id; draftText=text;
+  lsSet(DRAFT,JSON.stringify({id:draftId,text:cut(text,500),t:Date.now()}));
+  const t=li.querySelector('.text'); if(t) t.textContent=cut(text.trim(),500);
+  clearTimeout(draftTimer); draftTimer=setTimeout(()=>{ if(draftId===li.dataset.id){ const tt=draftText.trim(); const it=findItem(draftId); if(it&&tt&&tt!==it.text) updateItem(draftId,{text:cut(tt,500)}); lsDel(DRAFT); } },500);
+});
+$('todoArea').addEventListener('focusout',(e)=>{ if(e.target&&e.target.matches&&e.target.matches('textarea[data-role=edit]')) flushDraft(); });
+
+$('doneArea').addEventListener('click',(e)=>{
+  const btn=e.target.closest('[data-act=undone]'); if(!btn) return;
+  const li=e.target.closest('li.item'); if(!li) return;
+  setDone(li.dataset.id,false); renderDone(); renderTodo(); showToast('やることに もどしたよ',{ms:1500});
+});
+$('doneClearBtn').addEventListener('click',()=>{ $('doneClearConfirm').hidden=false; });
+$('doneClearNo').addEventListener('click',()=>{ $('doneClearConfirm').hidden=true; });
+$('doneClearYes').addEventListener('click',()=>{ moveDoneToTrash(); $('doneClearConfirm').hidden=true; renderAll(); showToast('ごみばこへ うつしたよ',{ms:2000}); });
+
+function backupMsg(m){ const el=$('backupMsg'); el.hidden=false; el.textContent=m; }
+async function copyBackup(text){
+  try{ await navigator.clipboard.writeText(text); markBackup(); renderSettings(); backupMsg('コピーしたよ。メモアプリに はりつけて とっておいてね。'); return true; }catch(e){}
+  const ta=$('backupOut'); ta.hidden=false; ta.value=text; ta.focus(); try{ ta.setSelectionRange(0,ta.value.length); }catch(x){}
+  backupMsg('下の わくの もじを ぜんぶ コピーして、メモに はりつけてね。');
+  return false;
+}
+$('backupShareBtn').addEventListener('click',async ()=>{
+  const text=backupText();
+  if(navigator.share){
+    try{ await navigator.share({text}); markBackup(); renderSettings(); backupMsg('おくれたよ！ 「メモ」アプリに 入っているか たしかめてね。'); return; }
+    catch(e){ if(e&&e.name==='AbortError') return; }
+  }
+  copyBackup(text);
+});
+
+function importMsg(m){ const el=$('importMsg'); el.hidden=false; el.textContent=m; }
+$('importBtn').addEventListener('click',()=>{
+  const t=$('importText').value.trim();
+  if(!t){ importMsg('メモに おくった もじを はりつけてね'); return; }
+  const res=parseBackup(t);
+  if(res.error){ importMsg(res.error); return; }
+  const before=new Set(state.items.map(i=>i.id));
+  importState(res.state);
+  const added=state.items.filter(i=>!before.has(i.id)).length;
+  $('importText').value=''; renderAll();
+  importMsg(added?added+'こ もどしたよ！':'ぜんぶ もう 入っていたよ。');
+});
+
+$('trashList').addEventListener('click',(e)=>{ const b=e.target.closest('[data-act=restore]'); if(!b) return; const li=e.target.closest('li'); restoreTrash(li.dataset.id); renderAll(); showToast('もどしたよ',{ms:1500}); });
+$('trashEmptyBtn').addEventListener('click',()=>{ $('trashEmptyConfirm').hidden=false; });
+$('trashEmptyNo').addEventListener('click',()=>{ $('trashEmptyConfirm').hidden=true; });
+$('trashEmptyYes').addEventListener('click',()=>{ emptyTrash(); $('trashEmptyConfirm').hidden=true; renderAll(); });
+
+/* ---------- service worker (電波がなくても開ける) ---------- */
+let swReg=null, hadController=false;
+function updMsg(m){ const el=$('updateMsg'); el.hidden=false; el.textContent=m; }
+function notifyUpdate(){ updMsg('あたらしい バージョンに なったよ。「いま 切りかえる」で すぐ つかえるよ。'); showToast('あたらしい バージョンが あるよ',{button:'いま 切りかえる',ms:10000,onButton:()=>{ flushDraft(); location.reload(); }}); }
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  hadController=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(hadController) notifyUpdate(); hadController=true; });
+  window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').then(reg=>{ swReg=reg; }).catch(()=>{}); });
+}
+$('updateBtn').addEventListener('click',async ()=>{
+  if(!swReg){ updMsg('いまの バージョンだよ（v'+APP_VERSION+'）'); return; }
+  try{
+    updMsg('たしかめ中…');
+    await swReg.update();
+    const w=swReg.installing||swReg.waiting;
+    if(w){ updMsg('あたらしい バージョンを じゅんび中… すこし まってね。'); w.addEventListener('statechange',()=>{ if(w.state==='activated') notifyUpdate(); }); }
+    else updMsg('いまが さいしんだよ（v'+APP_VERSION+'）');
+  }catch(e){ updMsg('いまは たしかめられなかった。ネットに つながっているか 見てね。'); }
+});
+
+/* ---------- boot ---------- */
+renderToday();
+setInterval(renderToday,60000);
+loadSync();
+$('newText').disabled=false; $('addBtn').disabled=false;
+$('inAppBanner').hidden=!(isInApp&&!isStandalone);
+$('safariBanner').hidden=!(isIOS&&!isStandalone&&!isInApp);
+renderAll();
+if(recovered){ showToast('ひかえから もとに もどしたよ',{ms:4000}); }
+enqueue(loadIdb); // 保存より先に 控えを 読む
+
+// テスト・診断用の入口（画面からは見えない）
+window.__yarukoto={
+  get state(){ return state; }, get loaded(){ return loaded; }, get loadedFrom(){ return loadedFrom; }, get lastSave(){ return lastSave; }, get recovered(){ return recovered; },
+  KEY,BAK,DRAFT,addItem,updateItem,setDone,deleteItem,restoreTrash,emptyTrash,moveDoneToTrash,backupText,parseBackup,importState,renderAll,save,flushDraft,mergeStates,
+  idbLatest:()=>idb.get('latest'), idbKeys:()=>idb.keys(), idbGet:(k)=>idb.get(k), get idbWriteOk(){ return idbWriteOk; }, idbFlush:()=>idbQueue, get isStandalone(){ return isStandalone; },
+};
+})();
+</script>
+</body>
+</html>

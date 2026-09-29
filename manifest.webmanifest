@@ -1,0 +1,17 @@
+{
+  "name": "あいかの やることリスト！",
+  "short_name": "やることリスト",
+  "description": "あいかちゃん専用の、かわいい やることリスト",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2FAFD",
+  "theme_color": "#8ED6EA",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
