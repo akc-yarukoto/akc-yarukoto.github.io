@@ -36,10 +36,12 @@
 html{background:var(--bg);-webkit-text-size-adjust:100%}
 body{
   font-family:var(--font);font-size:17px;line-height:1.5;color:var(--ink);background:var(--bg);
+  word-break:keep-all;overflow-wrap:anywhere; /* 文は スペースの ところで だけ 改行（単語の 途中で 切らない） */
   padding-bottom:calc(var(--tab-h) + env(safe-area-inset-bottom,0px) + 90px);
   overscroll-behavior-y:none;min-height:100%;
 }
 button,input,textarea{font-family:inherit;font-size:inherit;color:inherit}
+input,textarea{word-break:normal}
 button{border:0;background:none;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--sky-deep);outline-offset:2px}
 img{max-width:100%;display:block}
@@ -104,7 +106,7 @@ main{padding:0 16px}
 body.browser .view,body.browser .tabbar{display:none!important}
 .guide{padding:6px 0 20px}
 .guide h2{font-size:clamp(20px,6.2vw,24px);line-height:1.45;margin:4px 0 6px}
-.guide h2 .nw,.guide .nw{white-space:nowrap}
+.guide h2 .nw,.guide .nw,.nw{white-space:nowrap}
 .guide h2 b{color:var(--pink-text)}
 .guide .lead{word-break:keep-all;overflow-wrap:anywhere;font-size:16px;line-height:1.7;color:var(--muted);font-weight:700;margin-bottom:14px}
 .gsteps{list-style:none;display:flex;flex-direction:column;gap:12px;counter-reset:g}
@@ -122,7 +124,8 @@ body.browser .view,body.browser .tabbar{display:none!important}
 
 .summary{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 2px 8px;font-size:16px;color:var(--muted);flex-wrap:wrap;font-weight:700}
 .summary b{color:var(--sky-deep);font-size:18px}
-.chips{display:flex;gap:10px;flex-wrap:wrap}
+.chips{display:flex;gap:10px;flex-wrap:nowrap}
+@media (max-width:359px){.chips{gap:6px}.summary .chip{padding:0 11px}}
 .chip{
   min-height:44px;padding:0 16px;border-radius:999px;border:2px solid var(--sky-line);
   background:var(--paper);font-size:16px;font-weight:700;color:var(--muted);
@@ -238,6 +241,7 @@ body.drag-on{-webkit-user-select:none;user-select:none}
   width:100%;min-height:110px;padding:10px 12px;font-size:16px;line-height:1.5;border:2px solid var(--sky-line);border-radius:12px;background:#fff;
   font-family:ui-monospace,Menlo,monospace;
 }
+.card #backupOut{font-family:inherit;min-height:160px;max-height:320px;font-size:16px;line-height:1.6;color:var(--ink)}
 .status{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;font-size:16px}
 .status dt{color:var(--muted);font-weight:700}
 .status dd{font-variant-numeric:tabular-nums}
@@ -323,8 +327,8 @@ details[open] summary::before{content:"▼"}
         <h3 id="dueSheetTitle">いつまでに やる？</h3>
         <div class="what" id="dueSheetText"></div>
         <div class="dsgrid">
-          <button type="button" class="dsbtn today" data-due="today">きょう<small id="dsToday"></small></button>
-          <button type="button" class="dsbtn" data-due="tomorrow">あした<small id="dsTomorrow"></small></button>
+          <button type="button" class="dsbtn today" data-due="today">今日<small id="dsToday"></small></button>
+          <button type="button" class="dsbtn" data-due="tomorrow">明日<small id="dsTomorrow"></small></button>
           <label class="dsbtn">ほかの日<small>カレンダー</small><input type="date" id="dueSheetDate" aria-label="日にちを えらぶ"></label>
           <button type="button" class="dsbtn" data-due="none">いつでも<small>きめない</small></button>
         </div>
@@ -336,7 +340,8 @@ details[open] summary::before{content:"▼"}
       <div id="todoSummary"></div>
       <div class="chips">
         <button type="button" class="chip on" data-filter="all" id="chipAll">ぜんぶ</button>
-        <button type="button" class="chip" data-filter="today" id="chipToday">きょうまで</button>
+        <button type="button" class="chip" data-filter="today" id="chipToday">今日まで</button>
+        <button type="button" class="chip" data-filter="tomorrow" id="chipTomorrow">明日まで</button>
       </div>
     </div>
     <div id="todoArea"></div>
@@ -351,12 +356,12 @@ details[open] summary::before{content:"▼"}
     <div class="hero">
       <img src="img/yay.png" alt="" width="84" height="84">
       <div>
-        <div class="big" id="doneHeadline">きょうも えらい！</div>
+        <div class="big" id="doneHeadline">今日も えらい！</div>
         <div class="sub" id="doneSub"></div>
       </div>
     </div>
     <div class="stats">
-      <div class="stat"><div class="n" id="statToday">0</div><div class="l">きょう</div></div>
+      <div class="stat"><div class="n" id="statToday">0</div><div class="l">今日</div></div>
       <div class="stat"><div class="n" id="statWeek">0</div><div class="l">こんしゅう</div></div>
       <div class="stat"><div class="n" id="statAll">0</div><div class="l">ぜんぶ</div></div>
     </div>
@@ -378,23 +383,13 @@ details[open] summary::before{content:"▼"}
   <section class="view" id="view-settings" hidden>
     <div class="card">
       <h2>バックアップ</h2>
-      <p>やることは この スマホに じどうで ほぞんされているよ。スマホを かえるときの ために、ときどき「メモ」アプリに おくっておいてね。（出てきた ならびから「メモ」を えらぶよ）</p>
-      <div class="stack">
-        <button type="button" class="btn primary wide" id="backupShareBtn">メモに おくる</button>
+      <p>やることは この スマホに じどうで ほぞんされているよ。ときどき <span class="nw">「コピーする」を</span> おして、メモアプリに はりつけておくと あんしん。</p>
+      <textarea id="backupOut" readonly aria-label="バックアップの もじ"></textarea>
+      <div class="stack" style="margin-top:10px">
+        <button type="button" class="btn primary wide" id="backupCopyBtn">コピーする</button>
       </div>
       <div class="notice calm" id="backupMsg" hidden></div>
-      <textarea id="backupOut" readonly hidden aria-label="バックアップの もじ" style="margin-top:10px"></textarea>
       <div class="notice" id="backupRemind" hidden></div>
-    </div>
-
-    <div class="card">
-      <h2>バックアップから もどす</h2>
-      <p>メモに おくった もじを ぜんぶ コピーして、下に はりつけてね。いまの やることは けさずに、たりない ものだけ もどすよ。</p>
-      <div class="stack">
-        <textarea id="importText" placeholder="ここを ながおしして「ペースト」" aria-label="バックアップの もじ"></textarea>
-        <button type="button" class="btn primary wide" id="importBtn">もどす</button>
-      </div>
-      <div class="notice calm" id="importMsg" hidden></div>
     </div>
 
     <div class="card">
@@ -469,7 +464,7 @@ details[open] summary::before{content:"▼"}
    ========================================================= */
 (function(){
 'use strict';
-const APP_VERSION='1.4.1';
+const APP_VERSION='1.5.0';
 const KEY='yarukoto.v1', BAK='yarukoto.v1.bak', DRAFT='yarukoto.v1.draft', BROKEN='yarukoto.v1.broken.', TIP_DRAG='yarukoto.v1.tipDrag';
 const DB_NAME='yarukoto', DB_STORE='snap', SNAP_KEEP=30, SNAP_MIN_GAP=60000, PROTECT_KEEP=10, TRASH_DAYS=90, GONE_MAX=5000, SEQ_MAX=9e15;
 const BACKUP_REMIND_DAYS=14;
@@ -495,8 +490,8 @@ function fmtDateTime(ms){ const d=new Date(ms); return (d.getMonth()+1)+'/'+d.ge
 function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function dueLabel(due){
   const n=dayDiff(due); if(n===null) return null;
-  if(n===0) return {t:'きょう',c:'today'};
-  if(n===1) return {t:'あした',c:''};
+  if(n===0) return {t:'今日',c:'today'};
+  if(n===1) return {t:'明日',c:''};
   if(n<0) return {t:(n===-1?'きのう':(-n)+'日 すぎてる'),c:'over'};
   const d=parseYmd(due); return {t:(d.getMonth()+1)+'/'+d.getDate()+'（'+WD[d.getDay()]+'）',c:''};
 }
@@ -863,41 +858,18 @@ function emptyTrash(){ idbProtect('clear',JSON.stringify(state)); return commit(
 function moveDoneToTrash(){ return commit(s=>{ const now=Date.now(); const keep=[]; for(const it of s.items){ if(it.done){ it.deletedAt=now; it.updatedAt=now; s.trash.unshift(it); } else keep.push(it); } s.items=keep; },true); }
 function markBackup(){ commit(s=>{ s.lastBackupAt=Date.now(); }); }
 
-/* ---------- backup / import（ファイルは使わない。もじを「メモ」アプリに おくって、はりつけて もどす） ---------- */
-// 形: 1行目 見出し ／ 2行目 {"app":"yarukoto","v":2,"items":[[id,text,doneAt|0,due|"",createdAt,updatedAt,pos],…]}
-// ごみばこは入れない（もじを短くするため）。
+/* ---------- バックアップ（読める もじの 一覧を コピーするだけ。ファイルも「もどす」も つかわない） ---------- */
 function backupText(){
-  const d=new Date();
-  const items=state.items.map(i=>[i.id,i.text,i.done?(i.doneAt||i.updatedAt||1):0,i.due||'',i.createdAt||0,i.updatedAt||0,i.pos]);
-  return 'あいかの やることリスト バックアップ（'+(d.getMonth()+1)+'/'+d.getDate()+'）\n'+JSON.stringify({app:'yarukoto',v:2,at:Date.now(),items});
-}
-function parseBackup(text){
-  let s=String(text||'').replace(/^﻿/,'');
-  const a=s.indexOf('{'), b=s.lastIndexOf('}');
-  if(a<0||b<=a) return {error:'よめなかったよ。メモに おくった もじを ぜんぶ コピーして はりつけてね。'};
-  s=s.slice(a,b+1);
-  let o=null;
-  try{ o=JSON.parse(s); }catch(e){ try{ o=JSON.parse(s.replace(/[“”]/g,'"')); }catch(e2){ o=null; } }
-  if(!o) return {error:'よめなかったよ。もじが とちゅうで きれているかも。ぜんぶ コピーして はりつけてね。'};
-  if(o.app==='yarukoto'&&o.v===2&&Array.isArray(o.items)){
-    const items=o.items.map(r=>Array.isArray(r)?{id:r[0],text:r[1],done:!!r[2],doneAt:r[2]||null,due:r[3]||null,createdAt:r[4],updatedAt:r[5],pos:r[6]}:null);
-    return {state:normalize({v:1,seq:0,born:0,items,trash:[]})};
-  }
-  const d=(o.app==='yarukoto'&&o.data)?o.data:o;
-  if(!isValidState(d)) return {error:'これは やることリストの バックアップじゃないみたい。'};
-  return {state:normalize(d)};
-}
-// もどすときは「たりないものを たす」だけ。いまの やることは けさない
-function importState(s){
-  idbProtect('import',JSON.stringify(state));
-  const r=commit(cur=>{
-    // バックアップから もどす ものは「けした印」を はずして 生きかえらせる
-    const ids=new Set(s.items.map(i=>i.id).concat(s.trash.map(i=>i.id)));
-    cur.gone=(cur.gone||[]).filter(g=>!ids.has(g[0]));
-    const m=mergeStates(cur,{...s,gone:[]}); cur.items=m.state.items; cur.trash=m.state.trash; cur.gone=m.state.gone;
-  },true);
-  purgeTrash();
-  return r;
+  const d=new Date(), today=ymd();
+  const md=(x)=>(x.getMonth()+1)+'/'+x.getDate();
+  const one=(t)=>String(t).replace(/\s*\n\s*/g,' ');
+  const todo=state.items.filter(i=>!i.done);
+  const sec=(t,list)=>list.length?'■'+t+'\n'+list.sort(sortKey).map(i=>'・'+one(i.text)+(i.due&&parseYmd(i.due)?'（'+md(parseYmd(i.due))+'まで）':'')).join('\n'):'';
+  const body=[sec('今日まで',todo.filter(i=>i.due&&i.due<=today)),sec('そのあと',todo.filter(i=>i.due&&i.due>today)),sec('いつでも',todo.filter(i=>!i.due))].filter(Boolean).join('\n\n');
+  const done=state.items.filter(i=>i.done).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
+  let out='あいかの やることリスト（'+md(d)+' '+fmtTime(d.getTime())+'）\n\n'+(body||'やることは なし');
+  if(done.length) out+='\n\n■できた\n'+done.map(i=>'・'+one(i.text)+(i.doneAt?'（'+md(new Date(i.doneAt))+'）':'')).join('\n');
+  return out;
 }
 
 /* ---------- rendering ---------- */
@@ -933,7 +905,7 @@ function panelHtml(it){
   return '<div class="panel">'+
     '<textarea data-role="edit" maxlength="500" aria-label="やることを へんしゅう" rows="2">'+esc(it.text)+'</textarea>'+
     '<div class="label">いつまで？</div>'+
-    '<div class="duerow">'+chip('','なし')+chip(t,'きょう')+chip(tm,'あした')+
+    '<div class="duerow">'+chip('','なし')+chip(t,'今日')+chip(tm,'明日')+
       '<label class="datechip'+(other?' on':'')+'"><span data-role="datelabel">'+(other&&dl?esc(dl.t):'ほかの日')+'</span><input type="date" data-role="date" value="'+esc(due)+'" aria-label="日にちを えらぶ"></label></div>'+
     '<div class="label">じゅんばん</div>'+
     '<div class="moverow"><button type="button" class="btn ghost" data-act="up">▲ うえへ</button><button type="button" class="btn ghost" data-act="down">▼ したへ</button></div>'+
@@ -945,13 +917,15 @@ function renderTodo(){
   let items=state.items.filter(i=>!i.done||leaving.has(i.id));
   const remain=state.items.filter(i=>!i.done).length;
   const todayN=state.items.filter(i=>!i.done&&i.due&&i.due<=today).length;
-  $('todoSummary').innerHTML=remain?('のこり <b>'+remain+'</b>こ'+(todayN?'・きょうまで <b>'+todayN+'</b>こ':'')):'ぜんぶ おわった！';
+  $('todoSummary').innerHTML=remain?('のこり <b>'+remain+'</b>こ'+(todayN?'・今日まで <b>'+todayN+'</b>こ':'')):'ぜんぶ おわった！';
   $('todoBadge').hidden=!todayN; $('todoBadge').textContent=todayN;
-  $('chipAll').classList.toggle('on',filter==='all'); $('chipToday').classList.toggle('on',filter==='today');
+  $('chipAll').classList.toggle('on',filter==='all'); $('chipToday').classList.toggle('on',filter==='today'); $('chipTomorrow').classList.toggle('on',filter==='tomorrow');
+  const tomorrow=addDays(today,1);
   if(filter==='today') items=items.filter(i=>i.due&&i.due<=today);
+  if(filter==='tomorrow') items=items.filter(i=>i.due&&i.due<=tomorrow);
   const groups=[
-    {k:'now',t:'きょうまで',f:i=>i.due&&i.due<=today},
-    {k:'later',t:'そのあと',f:i=>i.due&&i.due>today},
+    {k:'now',t:'今日まで',f:i=>i.due&&i.due<=today},
+    {k:'later',t:filter==='tomorrow'?'明日':'そのあと',f:i=>i.due&&i.due>today},
     {k:'any',t:'いつでも',f:i=>!i.due},
   ];
   let html='';
@@ -961,7 +935,7 @@ function renderTodo(){
   }
   $('todoArea').innerHTML=html;
   $('todoEmpty').hidden=items.length>0;
-  $('todoEmptyText').innerHTML=(filter==='today'&&remain)?'きょうまでの やることは ないよ！':'やることは なにもないよ〜<br>のんびりしよ！';
+  $('todoEmptyText').innerHTML=(filter==='today'&&remain)?'今日までの やることは ないよ！':(filter==='tomorrow'&&remain)?'明日までの やることは ないよ！':'やることは なにもないよ〜<br>のんびりしよ！';
   $('firstHint').hidden=!(items.filter(i=>!i.done).length>=2&&!lsGet(TIP_DRAG));
   if(openPanel){ const ta=$('todoArea').querySelector('textarea[data-role=edit]'); if(ta) autoGrow(ta); updateMoveButtons(); }
 }
@@ -972,12 +946,12 @@ function renderDone(){
   const nToday=done.filter(i=>dayOf(i.doneAt)===today).length;
   const nWeek=done.filter(i=>dayOf(i.doneAt)>=wkS).length;
   $('statToday').textContent=nToday; $('statWeek').textContent=nWeek; $('statAll').textContent=done.length;
-  $('doneHeadline').textContent=nToday>=5?'きょう '+nToday+'こ！ すごすぎる！':nToday>=3?'きょう '+nToday+'こ できた！ えらい！':nToday>=1?'きょうも えらい！':done.length?'また ひとつずつ いこう！':'できたら ここで おいわい！';
+  $('doneHeadline').textContent=nToday>=5?'今日 '+nToday+'こ！ すごすぎる！':nToday>=3?'今日 '+nToday+'こ できた！ えらい！':nToday>=1?'今日も えらい！':done.length?'また ひとつずつ いこう！':'できたら ここで おいわい！';
   $('doneSub').textContent='あいかちゃんの できたこと';
   let html=''; let lastDay='';
   for(const it of done){
     const d=dayOf(it.doneAt);
-    if(d!==lastDay){ lastDay=d; const dd=parseYmd(d); const lab=d===today?'きょう':d===addDays(today,-1)?'きのう':(dd?fmtDate(dd):'いつか'); html+=(html?'</ul>':'')+'<div class="group">'+lab+'</div><ul class="list">'; }
+    if(d!==lastDay){ lastDay=d; const dd=parseYmd(d); const lab=d===today?'今日':d===addDays(today,-1)?'きのう':(dd?fmtDate(dd):'いつか'); html+=(html?'</ul>':'')+'<div class="group">'+lab+'</div><ul class="list">'; }
     html+='<li class="item done-item" data-id="'+esc(it.id)+'"><div class="row"><div class="body"><div class="text">'+esc(it.text)+'</div><div class="time">'+fmtTime(it.doneAt||0)+' に できた</div></div><button type="button" class="restore" data-act="undone">もどす</button></div></li>';
   }
   if(html) html+='</ul>';
@@ -994,7 +968,8 @@ function renderSettings(){
   const days=state.lastBackupAt?Math.floor((Date.now()-state.lastBackupAt)/86400000):null;
   const need=state.items.length>=3&&(days===null||days>=BACKUP_REMIND_DAYS);
   $('backupRemind').hidden=!need;
-  $('backupRemind').textContent=days===null?'まだ バックアップを とっていないよ。いちど メモに おくっておくと あんしん！':'さいごの バックアップから '+days+'日。また メモに おくっておこう！';
+  $('backupRemind').textContent=days===null?'まだ バックアップを とっていないよ。いちど コピーして メモに はっておくと あんしん！':'さいごの バックアップから '+days+'日。また コピーして メモに はっておこう！';
+  $('backupOut').value=backupText();
   $('settingsBadge').hidden=!need;
   renderStatus();
 }
@@ -1268,32 +1243,14 @@ $('doneClearNo').addEventListener('click',()=>{ $('doneClearConfirm').hidden=tru
 $('doneClearYes').addEventListener('click',()=>{ moveDoneToTrash(); $('doneClearConfirm').hidden=true; renderAll(); showToast('ごみばこへ うつしたよ',{ms:2000}); });
 
 function backupMsg(m){ const el=$('backupMsg'); el.hidden=false; el.textContent=m; }
-async function copyBackup(text){
-  try{ await navigator.clipboard.writeText(text); markBackup(); renderSettings(); backupMsg('コピーしたよ。メモアプリに はりつけて とっておいてね。'); return true; }catch(e){}
-  const ta=$('backupOut'); ta.hidden=false; ta.value=text; ta.focus(); try{ ta.setSelectionRange(0,ta.value.length); }catch(x){}
-  backupMsg('下の わくの もじを ぜんぶ コピーして、メモに はりつけてね。');
-  return false;
-}
-$('backupShareBtn').addEventListener('click',async ()=>{
-  const text=backupText();
-  if(navigator.share){
-    try{ await navigator.share({text}); markBackup(); renderSettings(); backupMsg('おくれたよ！ 「メモ」アプリに 入っているか たしかめてね。'); return; }
-    catch(e){ if(e&&e.name==='AbortError') return; }
-  }
-  copyBackup(text);
-});
-
-function importMsg(m){ const el=$('importMsg'); el.hidden=false; el.textContent=m; }
-$('importBtn').addEventListener('click',()=>{
-  const t=$('importText').value.trim();
-  if(!t){ importMsg('メモに おくった もじを はりつけてね'); return; }
-  const res=parseBackup(t);
-  if(res.error){ importMsg(res.error); return; }
-  const before=new Set(state.items.map(i=>i.id));
-  importState(res.state);
-  const added=state.items.filter(i=>!before.has(i.id)).length;
-  $('importText').value=''; renderAll();
-  importMsg(added?added+'こ もどしたよ！':'ぜんぶ もう 入っていたよ。');
+$('backupCopyBtn').addEventListener('click',async ()=>{
+  const text=backupText(); const ta=$('backupOut'); ta.value=text;
+  const done=()=>{ markBackup(); renderSettings(); backupMsg('コピーしたよ！ メモアプリに はりつけて とっておいてね。'); };
+  try{ await navigator.clipboard.writeText(text); done(); return; }catch(e){}
+  // コピーが つかえない ときは もじを ぜんぶ えらんで おく
+  ta.focus(); try{ ta.setSelectionRange(0,ta.value.length); }catch(x){}
+  try{ if(document.execCommand('copy')){ done(); return; } }catch(x){}
+  backupMsg('上の もじを ながおしして「コピー」してね。');
 });
 
 $('trashList').addEventListener('click',(e)=>{ const b=e.target.closest('[data-act=restore]'); if(!b) return; const li=e.target.closest('li'); restoreTrash(li.dataset.id); renderAll(); showToast('もどしたよ',{ms:1500}); });
@@ -1372,7 +1329,7 @@ enqueue(loadIdb); // 保存より先に 控えを 読む
 // テスト・診断用の入口（画面からは見えない）
 window.__yarukoto={
   get state(){ return state; }, get loaded(){ return loaded; }, get loadedFrom(){ return loadedFrom; }, get lastSave(){ return lastSave; }, get recovered(){ return recovered; },
-  KEY,BAK,DRAFT,TIP_DRAG,openDueSheet,commitAdd,addItem,updateItem,moveItem,sortKey,setDone,deleteItem,restoreTrash,emptyTrash,moveDoneToTrash,backupText,parseBackup,importState,renderAll,save,flushDraft,mergeStates,
+  KEY,BAK,DRAFT,TIP_DRAG,openDueSheet,commitAdd,addItem,updateItem,moveItem,sortKey,setDone,deleteItem,restoreTrash,emptyTrash,moveDoneToTrash,backupText,renderAll,save,flushDraft,mergeStates,
   idbLatest:()=>idb.get('latest'), idbKeys:()=>idb.keys(), idbGet:(k)=>idb.get(k), get idbWriteOk(){ return idbWriteOk; }, idbFlush:()=>idbQueue, get isStandalone(){ return isStandalone; },
 };
 })();
