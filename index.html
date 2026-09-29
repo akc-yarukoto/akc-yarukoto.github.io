@@ -439,7 +439,7 @@ details[open] summary::before{content:"▼"}
    ========================================================= */
 (function(){
 'use strict';
-const APP_VERSION='1.3.0';
+const APP_VERSION='1.3.1';
 const KEY='yarukoto.v1', BAK='yarukoto.v1.bak', DRAFT='yarukoto.v1.draft', BROKEN='yarukoto.v1.broken.', TIP_DRAG='yarukoto.v1.tipDrag';
 const DB_NAME='yarukoto', DB_STORE='snap', SNAP_KEEP=30, SNAP_MIN_GAP=60000, PROTECT_KEEP=10, TRASH_DAYS=90, GONE_MAX=5000, SEQ_MAX=9e15;
 const BACKUP_REMIND_DAYS=14;
@@ -1269,7 +1269,13 @@ function renderGuide(){
   const ic=(f,alt)=>'<img class="ic" src="img/ios/'+f+'" alt="'+alt+'">';
   const share=ic('share.png','共有ボタン');
   const steps=[]; let note='';
-  if(isInApp){
+  if(isInApp&&/Instagram/i.test(navigator.userAgent)){
+    // インスタの ストーリーの リンクから ひらいた とき（インスタの 中では ホーム画面に 追加できない）
+    $('guideLead').innerHTML='いまは インスタの 中で ひらいているよ。<br>Safariで ひらきなおしてね。';
+    steps.push('右上の「<b>•••</b>」を タップ');
+    steps.push('「<b>外部ブラウザで開く</b>」を タップ<span class="sub">「Safariで開く」と 出ることも あるよ</span>');
+    steps.push('Safariで ひらくと、つぎの やりかたが 出るよ');
+  }else if(isInApp){
     $('guideLead').innerHTML='いまは LINEなどの アプリの 中で ひらいているよ。<br>Safariで ひらきなおしてね。';
     steps.push('画面の メニューから「<b>Safariで開く</b>」を えらぶ<span class="sub">Safariで ひらくと、つぎの やりかたが 出るよ</span>');
   }else if(!isIOS){

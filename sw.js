@@ -2,7 +2,7 @@
    役割: アプリの画面ファイルをキャッシュして、電波がなくても開けるようにする。
    注意: やることのデータ(localStorage / IndexedDB)には一切さわらない。
    運用: index.html を変えたら VERSION も上げる（旧キャッシュを入れ替えるため）。 */
-const VERSION = 'v1.3.0';
+const VERSION = 'v1.3.1';
 const CACHE = 'yarukoto-' + VERSION;
 const INDEX = new URL('./', self.location).href;               // 画面本体のキャッシュキー（./ に統一）
 const CRITICAL = ['./manifest.webmanifest'];                      // 失敗したら install ごと失敗させる（旧版が残る）
