@@ -71,14 +71,14 @@ main{padding:0 16px}
   display:flex;gap:8px;margin:0 -16px;padding:12px 16px 10px;background:var(--bg);
 }
 .addbar input{
-  flex:1;min-width:0;height:56px;padding:0 16px;font-size:18px;
+  flex:1;min-width:0;height:56px;padding:0 12px;font-size:18px;text-overflow:ellipsis;
   background:var(--paper);border:2px solid var(--sky-line);border-radius:16px;
   box-shadow:var(--shadow);
 }
-.addbar input::placeholder{color:#6B7C89}
+.addbar input::placeholder{color:#6B7C89;font-size:clamp(12px,calc((100vw - 158px) / 16),16px)} /* 例の 16文字が 375px 以上で 入りきる 大きさ */
 .addbar input:focus{border-color:var(--sky-deep);outline:none}
 .addbar button{
-  flex:none;height:56px;padding:0 18px;border-radius:16px;
+  flex:none;height:56px;padding:0 14px;border-radius:16px;
   background:var(--pink);color:var(--ink);font-size:18px;font-weight:700;
   box-shadow:0 3px 0 var(--pink-deep);
 }
@@ -336,7 +336,7 @@ body.bday .top .date b{color:var(--pink-text)}
   <!-- ===== やること ===== -->
   <section class="view" id="view-todo">
     <form class="addbar" id="addForm" autocomplete="off">
-      <input type="text" id="newText" placeholder="（例）デコチェキ、洗濯" maxlength="200" enterkeyhint="done" aria-label="やることを入力" disabled>
+      <input type="text" id="newText" placeholder="（例）ありツイ、洗濯、デコチェキ" maxlength="200" enterkeyhint="done" aria-label="やることを入力" disabled>
       <button type="submit" id="addBtn" disabled>ついか</button>
     </form>
     <div class="dsheet" id="dueSheet" hidden role="dialog" aria-modal="true" aria-labelledby="dueSheetTitle">
@@ -400,7 +400,7 @@ body.bday .top .date b{color:var(--pink-text)}
   <section class="view" id="view-settings" hidden>
     <div class="card">
       <h2>バックアップ</h2>
-      <p>やることは この スマホに じどうで ほぞんされているよ。ときどき <span class="nw">「コピーする」を</span> おして、メモアプリに はりつけておくと あんしん。</p>
+      <p>やることは この スマホに じどうで ほぞんされているよ。ときどき <span class="nw">「コピーする」で</span> コピーしておくと あんしん。</p>
       <textarea id="backupOut" readonly aria-label="バックアップの もじ"></textarea>
       <div class="stack" style="margin-top:10px">
         <button type="button" class="btn primary wide" id="backupCopyBtn">コピーする</button>
@@ -490,7 +490,7 @@ body.bday .top .date b{color:var(--pink-text)}
    ========================================================= */
 (function(){
 'use strict';
-const APP_VERSION='1.6.0';
+const APP_VERSION='1.6.1';
 const KEY='yarukoto.v1', BAK='yarukoto.v1.bak', DRAFT='yarukoto.v1.draft', BROKEN='yarukoto.v1.broken.', TIP_DRAG='yarukoto.v1.tipDrag';
 const DB_NAME='yarukoto', DB_STORE='snap', SNAP_KEEP=30, SNAP_MIN_GAP=60000, PROTECT_KEEP=10, TRASH_DAYS=90, GONE_MAX=5000, SEQ_MAX=9e15;
 const BACKUP_REMIND_DAYS=14;
@@ -1015,7 +1015,7 @@ function renderSettings(){
   const days=state.lastBackupAt?Math.floor((Date.now()-state.lastBackupAt)/86400000):null;
   const need=state.items.length>=3&&(days===null||days>=BACKUP_REMIND_DAYS);
   $('backupRemind').hidden=!need;
-  $('backupRemind').textContent=days===null?'まだ バックアップを とっていないよ。いちど コピーして メモに はっておくと あんしん！':'さいごの バックアップから '+days+'日。また コピーして メモに はっておこう！';
+  $('backupRemind').textContent=days===null?'まだ バックアップを とっていないよ。いちど コピーしておくと あんしん！':'さいごの バックアップから '+days+'日。また コピーしておこう！';
   $('backupOut').value=backupText();
   $('settingsBadge').hidden=!need;
   renderStatus();
@@ -1292,7 +1292,7 @@ $('doneClearYes').addEventListener('click',()=>{ moveDoneToTrash(); $('doneClear
 function backupMsg(m){ const el=$('backupMsg'); el.hidden=false; el.textContent=m; }
 $('backupCopyBtn').addEventListener('click',async ()=>{
   const text=backupText(); const ta=$('backupOut'); ta.value=text;
-  const done=()=>{ markBackup(); renderSettings(); backupMsg('コピーしたよ！ メモアプリに はりつけて とっておいてね。'); };
+  const done=()=>{ markBackup(); renderSettings(); backupMsg('コピーしたよ！'); };
   try{ await navigator.clipboard.writeText(text); done(); return; }catch(e){}
   // コピーが つかえない ときは もじを ぜんぶ えらんで おく
   ta.focus(); try{ ta.setSelectionRange(0,ta.value.length); }catch(x){}
